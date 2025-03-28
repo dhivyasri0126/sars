@@ -76,6 +76,35 @@ style="height: 100%;
         h2:hover {
             color: darkblue;
         }
+        .btn-custom {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    margin: 10px 0;
+    transition: all 0.3s ease-in-out;
+    text-transform: uppercase;
+}
+
+.btn-login {
+    background: linear-gradient(to right, #007bff, #0056b3); /* Blue Gradient */
+}
+
+.btn-signup {
+    background: linear-gradient(to right, #28a745, #218838); /* Green Gradient */
+}
+
+/* Hover Effects */
+.btn-custom:hover {
+    filter: brightness(1.2);
+    transform: scale(1.05);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); /* Adds depth */
+}
     </style>
 </head>
 <body>
@@ -87,9 +116,9 @@ style="height: 100%;
         <h1>Dr. N.G.P Institute of Technology</h2>
         
         <div class="mt-4">
-             <h2 style = "color:black; cursor:pointer;"onclick="login()"> -> LOGIN </h2>
-                 <h2  style = "color:black;cursor:pointer;"onclick="signup()"> -> SIGNUP</h2>
-           
+    <button class="btn-custom btn-login" onclick="login()">Login</button>
+    <button class="btn-custom btn-signup" onclick="signup()">Signup</button>
+</div>
            <script>
             function login() {
               window.location.href ="login.html";
