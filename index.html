@@ -55,16 +55,21 @@ style="height: 100%;
             align-items: center;
             margin: 0;
         }
+         body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3); /* Dark transparent overlay */
+    z-index: -1;
+}
         .container {
-            background: rgba(255, 255, 255, 0.2); /* Glassy effect */
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px); /* Blur effect */
-            -webkit-backdrop-filter: blur(10px); /* For Safari */
-            max-width: 400px;
-            width: 90%;
-        }
+    background: rgba(255, 255, 255, 0.15); /* More opaque */
+    backdrop-filter: blur(15px); /* Increased blur */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Softer border */
+}
         .logo {
             width: 150px;
             margin-bottom: 20px;
@@ -76,34 +81,53 @@ style="height: 100%;
         h2:hover {
             color: darkblue;
         }
-        .btn-custom {
-    display: block;
-    width: 100%;
-    padding: 12px;
+        /* Common Glassy Button Styles */
+.btn-custom {
+    width: 220px;
+    padding: 15px;
     font-size: 18px;
     font-weight: bold;
     color: white;
     border: none;
-    border-radius: 25px;
+    border-radius: 30px;
     cursor: pointer;
-    margin: 10px 0;
-    transition: all 0.3s ease-in-out;
     text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
 }
 
+/* LOGIN Button - Glassy Blue */
 .btn-login {
-    background: linear-gradient(to right, #007bff, #0056b3); /* Blue Gradient */
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.7), rgba(0, 86, 179, 0.7));
 }
 
-.btn-signup {
-    background: linear-gradient(to right, #28a745, #218838); /* Green Gradient */
-}
-
-/* Hover Effects */
-.btn-custom:hover {
-    filter: brightness(1.2);
+.btn-login:hover {
     transform: scale(1.05);
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); /* Adds depth */
+    box-shadow: 0px 8px 20px rgba(0, 123, 255, 0.5);
+}
+
+.btn-login:active {
+    transform: scale(0.98);
+    box-shadow: 0px 3px 8px rgba(0, 123, 255, 0.3);
+}
+
+/* SIGNUP Button - Glassy Green */
+.btn-signup {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.7), rgba(33, 136, 56, 0.7));
+}
+
+.btn-signup:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 8px 20px rgba(40, 167, 69, 0.5);
+}
+
+.btn-signup:active {
+    transform: scale(0.98);
+    box-shadow: 0px 3px 8px rgba(40, 167, 69, 0.3);
 }
     </style>
 </head>
