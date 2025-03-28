@@ -40,8 +40,8 @@ style="height: 100%;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Project by DHIVYASRI">
     <title>Student Activity Record System</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+     <style>
         body {
             background: url('newngpb.jpg.jpg') no-repeat center center fixed;
             background-size: cover;
@@ -76,6 +76,21 @@ style="height: 100%;
         h2:hover {
             color: darkblue;
         }
+        .btn-glossy {
+            color: white;
+            background-color: darkblue;
+            border: none;
+            margin: 10px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 0 0 0 darkblue;
+        }
+        .btn-glossy:hover {
+            background-color: navy;
+            box-shadow: inset 100px 0 0 0 rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -87,8 +102,9 @@ style="height: 100%;
         <h1>Dr. N.G.P Institute of Technology</h2>
 
         <div class="mt-4">
-             <h2 style = "color:black; cursor:pointer;"onclick="login()"> -> LOGIN </h2>
-                 <h2  style = "color:black;cursor:pointer;"onclick="signup()"> -> SIGNUP</h2>
+            <button class="btn-glossy" onclick="login()">Login</button>
+            <button class="btn-glossy" onclick="signup()">Sign Up</button>
+        </div>
 
            <script>
             function login() {
@@ -98,7 +114,6 @@ style="height: 100%;
                 window.location.href ="signup_s.html";
             }
            </script>
-        </div>
     </div>
 
 </body>
