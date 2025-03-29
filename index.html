@@ -21,6 +21,16 @@
             align-items: center;
             margin: 0;
         }
+        .container {
+            background: rgba(255, 255, 255, 0.2); /* Glassy effect */
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px); /* Blur effect */
+            -webkit-backdrop-filter: blur(10px); /* For Safari */
+            max-width: 400px;
+            width: 90%;
+        }
         .logo {
             width: 150px;
             margin-bottom: 20px;
@@ -47,36 +57,6 @@
             background-color: navy;
             box-shadow: inset 100px 0 0 0 rgba(255, 255, 255, 0.2);
         }
-        .container {
-    display: inline-block;
-    min-width: fit-content;
-    max-width: 90%; /* Prevents excessive width */
-    padding: 20px;
-    border-radius: 10px; /* Keep your existing radius */
-    backdrop-filter: blur(10px); /* Maintains the glossy effect */
-    background: rgba(255, 255, 255, 0.2); /* Adjust transparency */
-    text-align: center;
-}
-
-.container h1 {
-    white-space: nowrap; /* Prevents text from wrapping */
-}
-
-@media (max-width: 768px) {
-    .container {
-            background: rgba(255, 255, 255, 0.2); /* Glassy effect */
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px); /* Blur effect */
-            -webkit-backdrop-filter: blur(10px); /* For Safari */
-            max-width: 400px;
-            width: 90%;
-        }
-    .container h1 {
-        white-space: normal; /* Wraps on smaller screens */
-    }
-}
     </style>
 </head>
 <body>
