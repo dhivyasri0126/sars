@@ -121,6 +121,7 @@
 
       <label for="confirm_password">Confirm Password:</label>
       <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter your password" required>
+      <input type="checkbox" onclick="revealPwd()">Show Password
       <small id="passwordError"></small>
 
       <button type="submit">Sign Up</button>
@@ -140,6 +141,14 @@
         errorField.innerText = "";
       }
     });
+      function revealPwd() {
+  var x = document.getElementById("confirm_password");
+  if (x.type === "password") {
+    x.type = "text";
+  } else {
+    x.type = "password";
+  }
+}
   </script>
 </body>
 </html>
