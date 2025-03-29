@@ -58,26 +58,27 @@
             box-shadow: inset 100px 0 0 0 rgba(255, 255, 255, 0.2);
         }
         .container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); /* Centers the container */
-    display: inline-block; /* Expands as needed */
+    display: inline-block;
     min-width: fit-content;
-    max-width: 90%; /* Prevents it from being too wide */
-    padding: inherit;
-    border-radius: inherit;
-    background: inherit; /* Keeps glossy effect */
+    max-width: 90%; /* Prevents excessive width */
+    padding: 20px;
+    border-radius: 10px; /* Keep your existing radius */
+    backdrop-filter: blur(10px); /* Maintains the glossy effect */
+    background: rgba(255, 255, 255, 0.2); /* Adjust transparency */
     text-align: center;
 }
 
 .container h1 {
-    white-space: nowrap; /* Prevents text wrapping */
+    white-space: nowrap; /* Prevents text from wrapping */
 }
 
 @media (max-width: 768px) {
+    .container {
+        width: auto; /* Allows it to resize */
+        max-width: 90%;
+    }
     .container h1 {
-        white-space: normal; /* Allows text wrapping on small screens */
+        white-space: normal; /* Wraps on smaller screens */
     }
 }
     </style>
