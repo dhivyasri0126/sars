@@ -117,7 +117,7 @@
 
       <label for="password">Password:</label>
       <input type="password" id="password" name="password" placeholder="Enter your password" 
-      pattern="(?=.\d)(?=.[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number, one uppercase, one lowercase letter, and at least 8 characters" required>
+      pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number, one uppercase, one lowercase letter, and at least 8 characters" required>
 
       <label for="confirm_password">Confirm Password:</label>
       <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter your password" required>
