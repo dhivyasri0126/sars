@@ -57,11 +57,29 @@
             background-color: navy;
             box-shadow: inset 100px 0 0 0 rgba(255, 255, 255, 0.2);
         }
-        @media (min-width: 600px) {
-      .institute-name {
-        white-space: nowrap;
-      }
+        .container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centers the container */
+    display: inline-block; /* Expands as needed */
+    min-width: fit-content;
+    max-width: 90%; /* Prevents it from being too wide */
+    padding: inherit;
+    border-radius: inherit;
+    background: inherit; /* Keeps glossy effect */
+    text-align: center;
+}
+
+.container h1 {
+    white-space: nowrap; /* Prevents text wrapping */
+}
+
+@media (max-width: 768px) {
+    .container h1 {
+        white-space: normal; /* Allows text wrapping on small screens */
     }
+}
     </style>
 </head>
 <body>
