@@ -121,7 +121,10 @@
 
       <label for="confirm_password">Confirm Password:</label>
       <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter your password" required>
-      <input type="checkbox" onclick="revealPwd()">Show Password
+      <div class="checkbox-container">
+        <input type="checkbox" onclick="revealPwd()" id="showPassword">
+        <label for="showPassword">Show Password</label>
+      </div>
       <small id="passwordError"></small>
 
       <button type="submit">Sign Up</button>
