@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Student SignUp</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="styles.css">
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("form");
+
+            form.addEventListener("submit", function (event) {
+                event.preventDefault(); 
+
+        
+                const name = document.getElementById("name").value.trim();
+                const regNumber = document.getElementById("age").value.trim();
+                const department = document.getElementById("Department").value;
+                const academicYear = document.getElementById("academic-year").value.trim();
+                const section = document.getElementById("section").value.trim();
+                const dob = document.getElementById("dob").value;
+                const gender = document.getElementById("gender").value;
+                const mobile = document.getElementById("mobile").value.trim();
+                const hostelDay = document.getElementById("h/d").value;
+                const address = document.getElementById("Address").value.trim();
+               const email = document.getElementById("email").value.trim();
+               const password = document.getElementById("password").value;
+               const confirmPassword = document.querySelector("input[placeholder='Confirm Password']").value;
+
+        
+               if (password !== confirmPassword) {
+                    alert("Passwords do not match!");
+                    return;
+                }
+        
+                if (mobile.length !== 10 || isNaN(mobile)) {
+                    alert("Please enter a valid 10-digit mobile number");
+                    return;
+                }
+
+                if (academicYear.length !== 4 || isNaN(academicYear)) {
+                    alert("Please enter a valid academic year (e.g., 2025)");
+                    return;
+                }
+
+        
+                const studentData = {
+                    name,
+                    regNumber,
+                    department,
+                    academicYear,
+                    section,
+                    dob,
+                    gender,
+                    mobile,
+                    hostelDay,
+                    address,
+                    email,
+                };
+
+                console.log("Student Data:", studentData);
+                alert("Sign-up successful!");
+
+        
+                form.reset();
+            });
+        });
+
+        </script>
+    </head>
+    <body>
+        <div id="stu">
+            <main>
+                <article>
+                    <form id="form">
+                        <h2>Student SignUp</h2>
+                        <div class="form-control">
+                            <label for="name" id="label-name">Name</label>
+                            <input type="text" id="name" placeholder="Enter your Name" required>
+                        </div>
+                        <div class="form-control">
+                            <label for="age" id="label-age">Register Number</label>
+                            <input type="text" id="age" placeholder="Enter your Register Number" required>
+                        </div>
+                        <div class="form-control">
+                            <label for="Department" id="label-dept">Department</label>
+                            <select id="Department" name="Department" required>
+                                <option value="cse">CSE</option>
+                                <option value="Bme">BME</option>
+                                <option value="ai&ds">AI&DS</option>
+                                <option value="it">IT</option>
+                                <option value="ece">ECE</option>
+                                <option value="eee">EEE</option>
+                                <option value="civil">Civil</option>
+                                <option value="mech">Mechanical</option>
+                            </select>
+                        </div>
+                        <div class="form-control">
+                            <label for="academic-year" id="label-year">Academic Year</label>
+                            <input type="text" id="academic-year" placeholder="Enter Your Academic Year" required>
+                        </div>
+                        <div class="form-control">
+                            <label for="section" id="label-sec">Section</label>
+                            <input type="text" id="section" placeholder="Enter your Section" required>
+                        </div>
+                        <div class="form-control">
+                            <label for="dob" id="label-dob">Date Of Birth</label>
+                            <input type="date" id="dob" required>
+                        </div>
+                        <div class="form-control">
+                            <label for="gender" id="label-gender">Gender</label>
+                            <select id="gender" name="gender" required>
+                                <option value="female">Female</option>
+                                <option value="male">Male</option>
+                            </select>
+                        </div>
+                        <div class="form-control">
+                            <label for="mobile" id="label-mob">Mobile Number</label>
+                            <input type="text" id="mobile" placeholder="Enter your Mobile Number" required>
+                        </div>
+                        <div class="form-control">
+                            <label for="h/d" id="label-h/d">Hosteller/DayScholar</label>
+                            <select id="h/d" name="h/d">
+                                <option value="hosteller">Hosteller</option>
+                                <option value="dayscholar">DayScholar</option>
+                            </select>
+                        </div>
+                        <div class="form-control">
+                            <label for="Address" id="label-Address">Address For Communication</label>
+                            <textarea placeholder="Enter your Address" name="Address" id="Address"></textarea>
+                        </div>
+                        <div class="form-control">
+                            <label for="email" id="label-address">Email</label>
+                            <input type="email" id="email" placeholder="Enter your email" password> 
+                        </div>
+                        <div class="form-control">
+                            <label for="password" id="label-password">
+                                Create Password
+                            </label>
+                            <input type="password" id="password" placeholder="Enter password"required>
+                        </div>
+                        <div class="form-control">
+                            <label for="password" id="password">Confirm Password</label>
+                            <input type="password" id="password" placeholder="Confirm Password" required>
+
+                        </div>
+                        
+                        <button type="submit" value="submit">Submit</button>
+                    </form>
+                </article>
+            </main>
+
+        </div>
+    </body>
+
+</html>
