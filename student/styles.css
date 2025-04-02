@@ -127,7 +127,7 @@
     margin-left: 260px;
 
 }body{
-    background-image: url('ngp.jpg')no-repeat center center fixed;
+    background-image: url('ngp.jpg');
     background-size: cover;
     background-repeat: no-repeat;
 }
