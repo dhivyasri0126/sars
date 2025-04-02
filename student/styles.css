@@ -127,7 +127,7 @@
     margin-left: 260px;
 
 }body{
-    background-image: url('./students/ngp.jpg')no-repeat center center fixed;
+    background-image: url('./student/ngp.jpg')no-repeat center center fixed;
     background-size: cover;
     background-repeat: no-repeat;
 }
@@ -164,7 +164,7 @@ form {
             width: 95%;
         }
 button{
-    background-color:skyblue;
+    background-color:blue;
     border: 1px solid #777;
     border-radius: 2px;
     font-family: inherit;
