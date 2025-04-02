@@ -128,10 +128,19 @@
 
 }
 body{
-    background-image:url('./student/ngp.jpg') ;
+    background-image:url('./student/ngp.jpg') no-repeat center center fixed;
     background-size: cover;
-    background-repeat: no-repeat;
-}
+    background-attachment: local;
+    color: white;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+     margin: 0;
+     }
+    
 h2{
     text-align: center;
     
