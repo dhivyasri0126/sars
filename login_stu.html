@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-image: url('newngpb.jpg.jpg'); /* Replace with your image */
+      background-size: cover; 
+      backdrop-filter:blur(4px);/* Ensure the image covers the entire screen */
+      background-position: center; /* Center the image */
+      background-repeat: no-repeat; /* Prevent repetition */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+   
+      
+    .login-container {
+       background-color: white; /* Make the login container stand out */
+       padding: 80px;
+       border-radius: 15px;
+       box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+       max-width: 250%;
+       text-align: center;
+       
+ 	     -webkit-box-shadow: 0px 10px 20px 0px rgba(50, 50, 50, 0.52);
+ 	     -moz-box-shadow:    0px 10px 20px 0px rgba(50, 50, 50, 0.52);
+ 	     box-shadow:         0px 10px 20px 0px rgba(50, 50, 50, 0.52);
+ 
+    }
+    .login-logo {
+      
+      width:105px;
+      height: 105px;
+      margin-bottom: 10px;
+      border-radius: 50%;
+     
+     
+    }
+    
+    h1 {
+      color: black;
+    }
+    label {
+      display: block;
+      margin: 20px 0 20px;
+      font-weight: bold;
+      font-size : 120%;
+      
+    }
+    input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0 20px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  <script>
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      if (email === "" || password === "") {
+        alert("Please fill in both fields.");
+        return;
+      }
+      alert(Logging in email ,{email});
+      
+    }
+  </script>
+</head>
+<body>
+ 
+  
+  <div class="login-container">
+    <img src ="2ngp-itech-logo.png" alt="logo" class ="login-logo">
+    <h2>Student Login</h2>
+    <form id="loginForm">
+      <label for="email" text-align ="left";>Email:</label>
+      <input type="email" id="email" name="email" placeholder="Enter your email" required>
+
+      <label for="password"; text-align ="left";>Password:</label>
+      <input type="password" id="password" name="password" placeholder="Enter your password" required>
+    <h3><a href = "fydyrd.html" style = "color: blue">Forgot Password ?</a></h3>
+
+      <button type="button" onclick="login()">Login</button>
+    </form>
+    <p style="color:black;"><b> Student : </b> 
+    <a href="njd.html" style="color: #0056b3;"  ><u> LOGIN HERE</u>
+      </a>
+      </p>
+  </div>
+
+  
+  
+</body>
+</html>
