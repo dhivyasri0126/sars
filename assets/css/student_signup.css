@@ -1,0 +1,199 @@
+*{
+
+    margin: 0;
+
+    padding: 0;
+
+    box-sizing: border-box;
+
+    font-family: 'Poppins',sans-serif;
+
+}
+
+.header{
+
+    width: 100%;
+
+    height: 100vh;
+
+    background-color: rgb(234, 242, 250);
+
+}
+
+
+
+.side-nav{
+
+    width: 250px;
+
+    height: 100%;
+
+    background: rgb(8, 8, 60);
+
+    position:fixed;
+
+    top:0;
+
+    left:0;
+
+    padding:20px 30px;
+
+} 
+
+.logo-img{
+
+    width: 50px;
+
+} 
+
+.nav-links{
+
+    list-style: none;
+
+    position: relative;
+
+}
+
+.nav-links li{
+
+    padding: 10px 0;
+
+}
+
+.nav-links li a{
+
+    color: #fff;
+
+    text-decoration: none;
+
+    padding:10px 14px;
+
+    display:flex;
+
+    align-items:center;
+
+}
+
+.nav-links li a i{
+
+    font-size: 22px;
+
+    margin-right: 20px;
+
+}
+
+.active{
+
+    background-color: #fff;
+
+    width: 100%;
+
+    height:47px;
+
+    position: absolute;
+
+    left: 0;
+
+    top:2.6%;
+
+    z-index: -1;
+
+    border-radius: 6px;
+
+    box-shadow: 0 5px 10px rgba(255,255,255,0.4);
+
+    display: none;
+
+}
+
+.nav-links li:hover a{
+
+    color: #030303;
+
+    transition: 0.3sec;
+
+}
+
+.nav-links li:hover ~ .active{
+
+    display: active;
+
+  
+
+}
+
+.activity{
+
+    margin-left: 260px;
+
+}
+body{
+    background-image: url('../images/signup.jpg');
+    background-size: cover;
+    background-attachment: local;
+    color: white;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+}
+h2{
+    text-align: center;
+    
+
+}
+
+form {
+    border-radius: 10px;
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px 20px;
+    box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.2); /* Glassy effect */
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px); /* Blur effect */
+    -webkit-backdrop-filter: blur(10px); /* For Safari */
+    max-width: 500px;
+    width: 90%;
+    color: rgb(0, 0, 0);
+    font-size: 25px;`
+}
+.form-control {
+    text-align: left;
+    margin-bottom: 25px;
+}
+.form-control label {
+    display: block;
+    margin-bottom: 10px;
+}
+.form-control input,
+        .form-control select,
+        .form-control textarea {
+            border: 1px solid #030247;
+            border-radius: 2px;
+            font-family: inherit;
+            padding: 12px;
+            display: block;
+            width: 95%;
+        }
+button{
+    background-color:skyblue;
+    border: 1px solid #777;
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 20px;
+    display: block;
+    width: 50%;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    margin-left: auto;
+    margin-right: auto;
+    padding:10px;
+    color: whitesmoke;
+}
