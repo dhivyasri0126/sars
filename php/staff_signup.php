@@ -1,11 +1,10 @@
 <?php
-$host = "db-meritlog.j.aivencloud.com";
-$user = "avnadmin";
-$pass = "AVNS_euCkUZfE4c79ZVUAKx5";
-$port = "23124";
+$host = "localhost";
+$user = "root";
+$pass = "";
 $db = "staff_signup"; // Replace with your actual DB name
 
-$conn = new mysqli($host, $user, $pass, $port, $db);
+$conn = new mysqli($host, $user, $pass, $db);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
