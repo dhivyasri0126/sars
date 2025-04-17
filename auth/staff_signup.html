@@ -119,7 +119,7 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
 <body>
   <div class="signup-container">
     <h1>Staff Signup</h1>
-    <form id="signupForm">
+    <form id="signupForm" method="post" action="../php/staff_signup.php">
       <label for="name">Name:</label>
       <input type="text" id="name" name="name" placeholder="Enter your name" required>
 
@@ -149,9 +149,9 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
       <label for="gender">Gender:</label>
       <select id="gender" name="gender" required>
         <option value="" selected disabled>Select your gender</option>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-        <option value="other">Other</option>
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+        <option value="O">Other</option>
       </select>
 
       <label for="phone">Phone Number:</label>
@@ -201,6 +201,10 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
     x.type = "password";
   }
 }
+	  fetch("../php/staff_signup.php", {
+    method: "POST",
+    body: formData
+})
   </script>
 </body>
 </html>
