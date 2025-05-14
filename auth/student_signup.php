@@ -124,7 +124,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-sizing: border-box;
         }
         
-        .row {
+/*        .row {
             display: flex;
             flex-wrap: wrap;
             margin: 0 -10px;
@@ -136,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 0 10px;
             min-width: 200px;
         }
-        
+*/        
         button {
             background-color: #007bff;
             color: white;
