@@ -107,10 +107,10 @@
       document.getElementById("roleText").innerText = role.charAt(0).toUpperCase() + role.slice(1) + " Access";
 
       document.getElementById("loginBtn").onclick = function () {
-        window.location.href = `./auth/${role}_login.html`;
+        window.location.href = `./auth/${role}_login.php`;
       };
       document.getElementById("signupBtn").onclick = function () {
-        window.location.href = `./auth/${role}_signup.html`;
+        window.location.href = `./auth/${role}_signup.php`;
       };
     }
 

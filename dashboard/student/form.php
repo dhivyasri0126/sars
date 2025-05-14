@@ -1,0 +1,47 @@
+<?php
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Connect to MySQL database
+$host = "localhost";
+$username = "root";
+$password = "";
+$database = "student_portal";
+
+$conn = new mysqli($host, $username, $password, $database);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Get POST data safely
+$fname = $conn->real_escape_string($_POST['fname']);
+$lname = $conn->real_escape_string($_POST['lname']);
+$regNo = $conn->real_escape_string($_POST['regNo']);
+$activity = $conn->real_escape_string($_POST['activity']);
+$date_from = $conn->real_escape_string($_POST['date-from']);
+$date_to = $conn->real_escape_string($_POST['date-to']);
+$college = $conn->real_escape_string($_POST['college']);
+$event_type = $conn->real_escape_string($_POST['activity-type']);
+$event_name = $conn->real_escape_string($_POST['event-name']);
+$award = $conn->real_escape_string($_POST['award']);
+
+// Insert into database
+$sql = "INSERT INTO activities (
+            first_name, last_name, register_no, activity_type, date_from, date_to, 
+            college, event_type, event_name, award
+        ) VALUES (
+            '$fname', '$lname', '$regNo', '$activity', '$date_from', '$date_to',
+            '$college', '$event_type', '$event_name', '$award'
+        )";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Activity submitted successfully.";
+} else {
+    echo "Error: " . $conn->error;
+}
+
+$conn->close();
+?>
