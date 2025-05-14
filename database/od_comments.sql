@@ -1,9 +1,0 @@
-CREATE TABLE IF NOT EXISTS od_comments (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    od_id INT NOT NULL,
-    staff_id INT NOT NULL,
-    comment TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (od_id) REFERENCES od_requests(id) ON DELETE CASCADE,
-    FOREIGN KEY (staff_id) REFERENCES staff(id) ON DELETE CASCADE
-); 
