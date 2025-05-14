@@ -28,7 +28,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("ssssssssssss", $name, $regno, $department, $year, $section, $dob, $gender, $mobile, $hostel_day, $address, $email, $password);
 
     if ($stmt->execute()) {
-        echo "<script>alert('Sign-up successful!'); window.location.href='student_signup.php';</script>";
+        // Set session variables for the new student
+        session_start();
+        $_SESSION['reg_number'] = $regno;
+        $_SESSION['name'] = $name;
+        $_SESSION['department'] = $department;
+        $_SESSION['academic_year'] = $year;
+        $_SESSION['section'] = $section;
+        $_SESSION['dob'] = $dob;
+        $_SESSION['gender'] = $gender;
+        $_SESSION['mobile'] = $mobile;
+        $_SESSION['hostel_day'] = $hostel_day;
+        $_SESSION['address'] = $address;
+        $_SESSION['email'] = $email;
+        // Redirect to profile page
+        header('Location: ../dashboard/student/profile.php');
+        exit();
     } else {
         echo "<script>alert('Error: " . $stmt->error . "');</script>";
     }

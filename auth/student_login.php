@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'] ?? '';
 
     // Prepare SQL statement
-    $sql = "SELECT reg_number, name, email, password FROM students WHERE email = ?";
+    $sql = "SELECT reg_number, name, department, academic_year, section, dob, gender, mobile, hostel_day, address, email, password FROM students WHERE email = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -29,6 +29,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $student['password'])) {
             $_SESSION['reg_number'] = $student['reg_number'];
             $_SESSION['name'] = $student['name'];
+            $_SESSION['department'] = $student['department'];
+            $_SESSION['academic_year'] = $student['academic_year'];
+            $_SESSION['section'] = $student['section'];
+            $_SESSION['dob'] = $student['dob'];
+            $_SESSION['gender'] = $student['gender'];
+            $_SESSION['mobile'] = $student['mobile'];
+            $_SESSION['hostel_day'] = $student['hostel_day'];
+            $_SESSION['address'] = $student['address'];
+            $_SESSION['email'] = $student['email'];
             header("Location: ../dashboard/student/index.php");
             exit;
         } else {

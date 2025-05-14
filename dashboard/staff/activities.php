@@ -85,15 +85,15 @@ if (isset($_GET['event_type']) && !empty($_GET['event_type'])) {
     $types .= "s";
 }
 
-$sql = "SELECT a.*, s.name as student_name, s.roll_number, s.department, s.year, 
+$sql = "SELECT a.*, s.name as student_name, s.reg_number, s.department, s.academic_year, 
         COALESCE(a.event_type, 'Not Specified') as event_type 
         FROM activities a 
-        JOIN students s ON a.student_id = s.id";
+        JOIN students s ON a.id = s.id";
 
 if (!empty($where_conditions)) {
     $sql .= " WHERE " . implode(" AND ", $where_conditions);
 }
-$sql .= " ORDER BY a.date DESC";
+$sql .= " ORDER BY a.date_from DESC";
 
 $stmt = $conn_students->prepare($sql);
 if (!empty($params)) {
@@ -189,6 +189,50 @@ while ($row = $result->fetch_assoc()) {
 
             <!-- Main Content Area -->
             <main class="p-6">
+                <!-- Export Buttons -->
+                <div class="flex space-x-4 mb-4">
+                    <button type="button" onclick="openExportModal('pdf')" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"><i class="fas fa-file-pdf mr-2"></i>Export to PDF</button>
+                    <button type="button" onclick="openExportModal('excel')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"><i class="fas fa-file-excel mr-2"></i>Export to Excel</button>
+                </div>
+                <!-- Export Modal -->
+                <div id="exportModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+                        <h2 class="text-lg font-bold mb-4 text-gray-800 dark:text-white">Select columns to export</h2>
+                        <form id="exportForm" method="post" action="export_activities.php" target="_blank">
+                            <input type="hidden" name="export_type" id="exportTypeInput" value="">
+                            <div class="grid grid-cols-1 gap-2 mb-4">
+                                <label><input type="checkbox" name="columns[]" value="student_name" checked> Student Name</label>
+                                <label><input type="checkbox" name="columns[]" value="reg_number" checked> Register Number</label>
+                                <label><input type="checkbox" name="columns[]" value="department" checked> Department</label>
+                                <label><input type="checkbox" name="columns[]" value="academic_year" checked> Academic Year</label>
+                                <label><input type="checkbox" name="columns[]" value="title" checked> Activity</label>
+                                <label><input type="checkbox" name="columns[]" value="event_type" checked> Event Type</label>
+                                <label><input type="checkbox" name="columns[]" value="date" checked> Date</label>
+                                <label><input type="checkbox" name="columns[]" value="status" checked> Status</label>
+                            </div>
+                            <div class="flex justify-end space-x-2">
+                                <button type="button" onclick="closeExportModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800">Cancel</button>
+                                <button type="submit" class="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white">Export</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <script>
+                function openExportModal(type) {
+                    document.getElementById('exportTypeInput').value = type;
+                    document.getElementById('exportModal').classList.remove('hidden');
+                }
+                function closeExportModal() {
+                    document.getElementById('exportModal').classList.add('hidden');
+                }
+                // Close modal on outside click
+                window.onclick = function(event) {
+                    var modal = document.getElementById('exportModal');
+                    if (event.target === modal) {
+                        closeExportModal();
+                    }
+                }
+                </script>
                 <!-- Search and Filter Section -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
                     <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4">

@@ -36,11 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_student'])) {
     $student_id = (int)$_POST['student_id'];
     $name = $conn_students->real_escape_string($_POST['name']);
     $department = $conn_students->real_escape_string($_POST['department']);
-    $year = (int)$_POST['year'];
+    $academic_year = (int)$_POST['academic_year'];
     
-    $sql = "UPDATE students SET name = ?, department = ?, year = ? WHERE id = ?";
+    $sql = "UPDATE students SET name = ?, department = ?, academic_year = ? WHERE id = ?";
     $stmt = $conn_students->prepare($sql);
-    $stmt->bind_param("ssii", $name, $department, $year, $student_id);
+    $stmt->bind_param("ssii", $name, $department, $academic_year, $student_id);
     
     if ($stmt->execute()) {
         header("Location: students.php?success=1");
@@ -114,7 +114,7 @@ if (isset($_GET['batch']) && !empty($_GET['batch'])) {
     $types .= "i";
 }
 
-$sql = "SELECT s.*, (SELECT COUNT(*) FROM activities a WHERE a.student_id = s.id) as activities FROM students s";
+$sql = "SELECT s.*, (SELECT COUNT(*) FROM activities a WHERE a.id = s.id) as activities FROM students s";
 if (!empty($where_conditions)) {
     $sql .= " WHERE " . implode(" AND ", $where_conditions);
 }
@@ -280,10 +280,10 @@ while ($row = $result->fetch_assoc()) {
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     <?php foreach ($students as $student): ?>
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?php echo htmlspecialchars($student['roll_number']); ?></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?php echo htmlspecialchars($student['reg_number']); ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?php echo htmlspecialchars($student['name']); ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?php echo htmlspecialchars($student['department']); ?></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?php echo htmlspecialchars($student['year']); ?></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?php echo htmlspecialchars($student['academic_year']); ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?php echo htmlspecialchars($student['activities']); ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <button onclick="openEditModal(<?php echo htmlspecialchars(json_encode($student)); ?>)" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">
@@ -326,8 +326,8 @@ while ($row = $result->fetch_assoc()) {
                         </select>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="edit_year">Year</label>
-                        <select id="edit_year" name="year" required
+                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="edit_year">Academic Year</label>
+                        <select id="edit_year" name="academic_year" required
                                 class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                             <?php foreach ($batches as $batch_name => $batch_year): ?>
                             <option value="<?php echo $batch_year; ?>"><?php echo $batch_name; ?></option>
@@ -391,7 +391,7 @@ while ($row = $result->fetch_assoc()) {
             document.getElementById('edit_student_id').value = student.id;
             document.getElementById('edit_name').value = student.name;
             document.getElementById('edit_department').value = student.department;
-            document.getElementById('edit_year').value = student.year;
+            document.getElementById('edit_year').value = student.academic_year;
             document.getElementById('editModal').classList.remove('hidden');
         }
 

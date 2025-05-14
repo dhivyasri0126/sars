@@ -2,16 +2,20 @@
 // Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
+session_start();
 // Database connection
 $conn = new mysqli("localhost", "root", "", "student_portal");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-
-// Fetch activities
-$sql = "SELECT date_from, event_name, event_type, college, award FROM activities ORDER BY date_from DESC";
-$result = $conn->query($sql);
+// Get reg_number from session (or fallback for testing)
+$reg_number = $_SESSION['reg_number'] ?? '710724104042';
+// Fetch only this student's activities
+$sql = "SELECT date_from, event_name, event_type, college, award FROM activities WHERE register_no = ? ORDER BY date_from DESC";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $reg_number);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -48,6 +52,10 @@ $result = $conn->query($sql);
                 <i class="fas fa-calendar-alt w-6"></i>
                 <span class="ml-3">Activity Calendar</span>
             </a>
+            <a href="profile.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
+                <i class="fas fa-user w-6"></i>
+                <span class="ml-3">Profile</span>
+            </a>
             <a href="logout.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
                 <i class="fas fa-sign-out-alt w-6"></i>
                 <span class="ml-3">Logout</span>
@@ -59,6 +67,15 @@ $result = $conn->query($sql);
         <!-- Top Navigation -->
         <header class="bg-white dark:bg-gray-800 shadow flex items-center justify-between px-6 py-4">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Activity Calendar</h1>
+            <div class="flex flex-col items-end">
+                <?php
+                $student_name = $_SESSION['first_name'] ?? '';
+                $student_lname = $_SESSION['last_name'] ?? '';
+                $reg_number = $_SESSION['reg_number'] ?? '';
+                ?>
+                <span class="font-bold text-gray-800 dark:text-white"><?php echo htmlspecialchars($student_name . ' ' . $student_lname); ?></span>
+                <span class="text-xs text-gray-500 dark:text-gray-300"><?php echo htmlspecialchars($reg_number); ?></span>
+            </div>
             <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                 <i class="fas fa-moon dark:hidden"></i>
                 <i class="fas fa-sun hidden dark:block text-yellow-400"></i>

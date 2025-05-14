@@ -1,6 +1,26 @@
 <?php
 session_start();
 
+// Simple autoloader for PhpSpreadsheet and PhpWord
+spl_autoload_register(function ($class) {
+    $prefixes = [
+        'PhpOffice\\PhpSpreadsheet\\' => __DIR__ . '/../../vendor/PhpSpreadsheet/',
+        'PhpOffice\\PhpWord\\' => __DIR__ . '/../../vendor/PhpWord/',
+        'Psr\\SimpleCache\\' => __DIR__ . '/../../vendor/Psr/SimpleCache/',
+    ];
+    foreach ($prefixes as $prefix => $base_dir) {
+        $len = strlen($prefix);
+        if (strncmp($prefix, $class, $len) === 0) {
+            $relative_class = substr($class, $len);
+            $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+            if (file_exists($file)) {
+                require_once $file;
+            }
+        }
+    }
+});
+require_once __DIR__ . '/../../vendor/tcpdf/tcpdf.php';
+
 // Check if user is logged in
 if (!isset($_SESSION['staff_id'])) {
     // Redirect to login page if not logged in
@@ -12,7 +32,7 @@ if (!isset($_SESSION['staff_id'])) {
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db = "student_activities"; // You may need to adjust this to your actual database name
+$db = "student_portal"; // You may need to adjust this to your actual database name
 
 // Create connection
 $conn = new mysqli($host, $user, $pass, $db);
@@ -56,12 +76,12 @@ if (!empty($_POST['date_to'])) {
 }
 
 // Query to get student activities with filters
-$query = "SELECT s.roll_number, s.name, s.department, s.batch, 
-          a.activity_type, a.activity_date, a.description, a.points
+$query = "SELECT s.reg_number, s.name, s.department, s.academic_year, 
+          a.activity_type, a.date_from
           FROM students s
-          JOIN activities a ON s.id = a.student_id
+          JOIN activities a ON s.id = a.id
           WHERE $where_clause
-          ORDER BY a.activity_date DESC";
+          ORDER BY a.date_from DESC";
 
 $result = $conn->query($query);
 
@@ -79,10 +99,10 @@ $headers = ['Roll Number', 'Name', 'Department', 'Batch', 'Activity Type', 'Date
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $data[] = [
-            $row['roll_number'],
+            $row['reg_number'],
             $row['name'],
             $row['department'],
-            $row['batch'],
+            $row['academic_year'],
             $row['activity_type'],
             $row['activity_date'],
             $row['description'],
@@ -113,10 +133,9 @@ $conn->close();
  * Export data to PDF
  */
 function exportToPDF($headers, $data) {
-    require_once '../../vendor/autoload.php'; // Make sure you have TCPDF installed via Composer
-    
+    // TCPDF is already required above
     // Create new PDF document
-    $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+    $pdf = new \TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
     
     // Set document information
     $pdf->SetCreator(PDF_CREATOR);
@@ -184,13 +203,9 @@ function exportToPDF($headers, $data) {
  * Export data to Excel
  */
 function exportToExcel($headers, $data) {
-    require_once '../../vendor/autoload.php'; // Make sure you have PhpSpreadsheet installed via Composer
-    
-    use PhpOffice\PhpSpreadsheet\Spreadsheet;
-    use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-    
+    // PhpSpreadsheet is already required above
     // Create new Spreadsheet object
-    $spreadsheet = new Spreadsheet();
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
     
     // Add headers
@@ -224,7 +239,7 @@ function exportToExcel($headers, $data) {
     header('Cache-Control: max-age=0');
     
     // Create Excel file
-    $writer = new Xlsx($spreadsheet);
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
     $writer->save('php://output');
     exit;
 }
@@ -233,13 +248,9 @@ function exportToExcel($headers, $data) {
  * Export data to Word
  */
 function exportToWord($headers, $data) {
-    require_once '../../vendor/autoload.php'; // Make sure you have PhpWord installed via Composer
-    
-    use PhpOffice\PhpWord\PhpWord;
-    use PhpOffice\PhpWord\IOFactory;
-    
+    // PhpWord is already required above
     // Create new Word document
-    $phpWord = new PhpWord();
+    $phpWord = new \PhpOffice\PhpWord\PhpWord();
     $section = $phpWord->addSection();
     
     // Add title
@@ -270,7 +281,7 @@ function exportToWord($headers, $data) {
     header('Cache-Control: max-age=0');
     
     // Save file
-    $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
+    $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
     $objWriter->save('php://output');
     exit;
 }

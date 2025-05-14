@@ -10,10 +10,10 @@ if ($conn->connect_error) {
 }
 
 // Get reg_number from session (or fallback for testing)
-$reg_number = $_SESSION['reg_number'] ?? '710724104042';
+$reg_number = $_SESSION['reg_number'] ?? '';
 
 // Initialize values
-$student_name = "Divya Darshini";
+$student_name = "";
 $last_participation = "None";
 $total_participated = 0;
 $total_prizes = 0;
@@ -137,6 +137,10 @@ $conn->close();
                 <i class="fas fa-calendar-alt w-6"></i>
                 <span class="ml-3">Activity Calendar</span>
             </a>
+            <a href="profile.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
+                <i class="fas fa-user w-6"></i>
+                <span class="ml-3">Profile</span>
+            </a>
             <a href="logout.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
                 <i class="fas fa-sign-out-alt w-6"></i>
                 <span class="ml-3">Logout</span>
@@ -148,6 +152,15 @@ $conn->close();
         <!-- Top Navigation -->
         <header class="bg-white dark:bg-gray-800 shadow flex items-center justify-between px-6 py-4">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
+            <div class="flex flex-col items-end">
+                <?php
+                $student_name = $_SESSION['first_name'] ?? '';
+                $student_lname = $_SESSION['last_name'] ?? '';
+                $reg_number = $_SESSION['reg_number'] ?? '';
+                ?>
+                <span class="font-bold text-gray-800 dark:text-white"><?php echo htmlspecialchars($student_name . ' ' . $student_lname); ?></span>
+                <span class="text-xs text-gray-500 dark:text-gray-300"><?php echo htmlspecialchars($reg_number); ?></span>
+            </div>
             <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                 <i class="fas fa-moon dark:hidden"></i>
                 <i class="fas fa-sun hidden dark:block text-yellow-400"></i>
@@ -189,6 +202,45 @@ $conn->close();
                 <canvas id="myLineChart" height="80"></canvas>
             </div>
         </main>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mt-6">
+            <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-4">My Activities</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Title</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Event Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date From</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date To</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Award</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <?php
+                        $conn = new mysqli("localhost", "root", "", "student_portal");
+                        if ($conn->connect_error) {
+                            die("Connection failed: " . $conn->connect_error);
+                        }
+                        $sql = "SELECT activity_type, event_name, date_from, date_to, award, status FROM activities WHERE register_no = ? ORDER BY date_to DESC";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->bind_param("s", $reg_number);
+                        $stmt->execute();
+                        $stmt->bind_result($activity_type, $event_name, $date_from, $date_to, $award, $status);
+                        while ($stmt->fetch()): ?>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($activity_type); ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($event_name); ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($date_from); ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($date_to); ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($award); ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo ucfirst($status); ?></td>
+                        </tr>
+                        <?php endwhile; $stmt->close(); $conn->close(); ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 <script>

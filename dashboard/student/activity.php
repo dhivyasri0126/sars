@@ -38,6 +38,10 @@ ini_set('display_errors', 1);
                         <i class="fas fa-calendar-alt w-6"></i>
                         <span class="ml-3">Activity Calendar</span>
                     </a>
+                    <a href="profile.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
+                        <i class="fas fa-user w-6"></i>
+                        <span class="ml-3">Profile</span>
+                    </a>
                     <a href="logout.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
                         <i class="fas fa-sign-out-alt w-6"></i>
                         <span class="ml-3">Logout</span>
@@ -49,6 +53,16 @@ ini_set('display_errors', 1);
                 <!-- Top Navigation -->
                 <header class="bg-white dark:bg-gray-800 shadow flex items-center justify-between px-6 py-4">
                     <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Activity Participation</h1>
+                    <div class="flex flex-col items-end">
+                        <?php
+                        session_start();
+                        $student_name = $_SESSION['first_name'] ?? '';
+                        $student_lname = $_SESSION['last_name'] ?? '';
+                        $reg_number = $_SESSION['reg_number'] ?? '';
+                        ?>
+                        <span class="font-bold text-gray-800 dark:text-white"><?php echo htmlspecialchars($student_name . ' ' . $student_lname); ?></span>
+                        <span class="text-xs text-gray-500 dark:text-gray-300"><?php echo htmlspecialchars($reg_number); ?></span>
+                    </div>
                     <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                         <i class="fas fa-moon dark:hidden"></i>
                         <i class="fas fa-sun hidden dark:block text-yellow-400"></i>
@@ -60,18 +74,6 @@ ini_set('display_errors', 1);
                         <form id="activityForm" action="form.php" method="post" class="space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <div class="mb-4">
-                                        <label for="fname" class="block text-gray-700 dark:text-gray-300 mb-2">First Name</label>
-                                        <input type="text" id="fname" name="fname" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    </div>
-                                    <div class="mb-4">
-                                        <label for="lname" class="block text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
-                                        <input type="text" id="lname" name="lname" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    </div>
-                                    <div class="mb-4">
-                                        <label for="regNo" class="block text-gray-700 dark:text-gray-300 mb-2">Register Number</label>
-                                        <input type="text" id="regNo" name="regNo" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    </div>
                                     <div class="mb-4">
                                         <label for="activity" class="block text-gray-700 dark:text-gray-300 mb-2">Activity</label>
                                         <select id="activity" name="activity" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">

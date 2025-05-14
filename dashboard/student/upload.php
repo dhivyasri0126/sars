@@ -38,6 +38,10 @@ ini_set('display_errors', 1);
                         <i class="fas fa-calendar-alt w-6"></i>
                         <span class="ml-3">Activity Calendar</span>
                     </a>
+                    <a href="profile.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
+                        <i class="fas fa-user w-6"></i>
+                        <span class="ml-3">Profile</span>
+                    </a>
                     <a href="logout.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
                         <i class="fas fa-sign-out-alt w-6"></i>
                         <span class="ml-3">Logout</span>
