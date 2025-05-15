@@ -222,6 +222,33 @@ while ($row = $result->fetch_assoc()) {
                 </div>
                 <?php endif; ?>
 
+                <!-- Export Buttons -->
+                <div class="flex space-x-4 mb-4">
+                    <button type="button" onclick="openExportModal('pdf')" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"><i class="fas fa-file-pdf mr-2"></i>Export to PDF</button>
+                    <button type="button" onclick="openExportModal('excel')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"><i class="fas fa-file-excel mr-2"></i>Export to Excel</button>
+                </div>
+
+                <!-- Export Modal -->
+                <div id="exportModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+                        <h2 class="text-lg font-bold mb-4 text-gray-800 dark:text-white">Select columns to export</h2>
+                        <form id="exportForm" method="post" action="export_students.php" target="_blank">
+                            <input type="hidden" name="export_type" id="exportTypeInput" value="">
+                            <div class="grid grid-cols-1 gap-2 mb-4">
+                                <label class="text-gray-700 dark:text-gray-300"><input type="checkbox" name="columns[]" value="reg_number" checked> Register Number</label>
+                                <label class="text-gray-700 dark:text-gray-300"><input type="checkbox" name="columns[]" value="name" checked> Name</label>
+                                <label class="text-gray-700 dark:text-gray-300"><input type="checkbox" name="columns[]" value="department" checked> Department</label>
+                                <label class="text-gray-700 dark:text-gray-300"><input type="checkbox" name="columns[]" value="academic_year" checked> Academic Year</label>
+                                <label class="text-gray-700 dark:text-gray-300"><input type="checkbox" name="columns[]" value="activities" checked> Activities</label>
+                            </div>
+                            <div class="flex justify-end space-x-2">
+                                <button type="button" onclick="closeExportModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800">Cancel</button>
+                                <button type="submit" class="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white">Export</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- Search and Filter Section -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
                     <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -253,8 +280,8 @@ while ($row = $result->fetch_assoc()) {
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="flex items-end">
-                            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 w-full">
+                        <div class="flex items-end space-x-2">
+                            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex-1">
                                 Apply Filters
                             </button>
                         </div>
@@ -418,6 +445,24 @@ while ($row = $result->fetch_assoc()) {
             }
             if (event.target === deleteModal) {
                 closeDeleteModal();
+            }
+        }
+
+        // Export Modal Functions
+        function openExportModal(type) {
+            document.getElementById('exportTypeInput').value = type;
+            document.getElementById('exportModal').classList.remove('hidden');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.add('hidden');
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            var modal = document.getElementById('exportModal');
+            if (event.target === modal) {
+                closeExportModal();
             }
         }
     </script>
