@@ -19,7 +19,16 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating database: " . $conn->error . "<br>";
 }
 
-// Select the database
+// Create student_portal database
+$student_db = "student_portal";
+$sql = "CREATE DATABASE IF NOT EXISTS $student_db";
+if ($conn->query($sql) === TRUE) {
+    echo "Student portal database created successfully<br>";
+} else {
+    echo "Error creating student portal database: " . $conn->error . "<br>";
+}
+
+// Select the staff database
 $conn->select_db($db);
 
 // Create staff table
@@ -30,6 +39,7 @@ $sql = "CREATE TABLE IF NOT EXISTS staff (
     password VARCHAR(255) NOT NULL,
     department VARCHAR(100),
     designation VARCHAR(100),
+    role ENUM('tutor', 'advisor', 'hod', 'none') DEFAULT 'none',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
 
@@ -38,6 +48,9 @@ if ($conn->query($sql) === TRUE) {
 } else {
     echo "Error creating staff table: " . $conn->error . "<br>";
 }
+
+// Select the student portal database
+$conn->select_db($student_db);
 
 // Create students table
 $sql = "CREATE TABLE IF NOT EXISTS students (
@@ -61,7 +74,9 @@ $sql = "CREATE TABLE IF NOT EXISTS activities (
     id INT(11) AUTO_INCREMENT PRIMARY KEY,
     student_id INT(11),
     title VARCHAR(255) NOT NULL,
-    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    description TEXT,
+    status ENUM('pending', 'tutor_approved', 'advisor_approved', 'hod_approved', 'approved', 'rejected') DEFAULT 'pending',
+    file_path VARCHAR(255),
     date DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id)
@@ -104,17 +119,17 @@ echo "Sample students data inserted successfully<br>";
 
 // Insert sample activities data
 $activities = [
-    [1, 'Project Submission', 'approved', '2024-03-15'],
-    [2, 'Internship Report', 'pending', '2024-03-14'],
-    [3, 'Workshop Attendance', 'rejected', '2024-03-13'],
-    [4, 'Research Paper', 'pending', '2024-03-12'],
-    [5, 'Conference Presentation', 'approved', '2024-03-11']
+    [1, 'Project Submission', '2024-03-15'],
+    [2, 'Internship Report', '2024-03-14'],
+    [3, 'Workshop Attendance', '2024-03-13'],
+    [4, 'Research Paper', '2024-03-12'],
+    [5, 'Conference Presentation', '2024-03-11']
 ];
 
-$stmt = $conn->prepare("INSERT INTO activities (student_id, title, status, date) VALUES (?, ?, ?, ?)");
+$stmt = $conn->prepare("INSERT INTO activities (student_id, title, date) VALUES (?, ?, ?)");
 
 foreach ($activities as $activity) {
-    $stmt->bind_param("isss", $activity[0], $activity[1], $activity[2], $activity[3]);
+    $stmt->bind_param("iss", $activity[0], $activity[1], $activity[2]);
     $stmt->execute();
 }
 

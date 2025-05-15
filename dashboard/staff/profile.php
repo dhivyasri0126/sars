@@ -31,10 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $email = $conn->real_escape_string($_POST['email']);
     $department = $conn->real_escape_string($_POST['department']);
     $designation = $conn->real_escape_string($_POST['designation']);
+    $role = $conn->real_escape_string($_POST['role']);
     
-    $sql = "UPDATE staff SET name = ?, email = ?, department = ?, designation = ? WHERE id = ?";
+    $sql = "UPDATE staff SET name = ?, email = ?, department = ?, designation = ?, role = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssssi", $name, $email, $department, $designation, $staff_id);
+    $stmt->bind_param("sssssi", $name, $email, $department, $designation, $role, $staff_id);
     
     if ($stmt->execute()) {
         // Update session variables
@@ -42,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         $_SESSION['staff_email'] = $email;
         $_SESSION['staff_department'] = $department;
         $_SESSION['staff_designation'] = $designation;
+        $_SESSION['staff_role'] = $role;
         
         header("Location: profile.php?success=1");
         exit();
@@ -197,6 +199,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                             <div class="mb-4">
                                 <label class="block text-gray-700 dark:text-gray-300 mb-2" for="designation">Designation</label>
                                 <input type="text" id="designation" name="designation" value="<?php echo htmlspecialchars($staff['designation']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 dark:text-gray-300 mb-2" for="role">Role</label>
+                                <select id="role" name="role" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <option value="tutor" <?php echo $staff['role'] === 'tutor' ? 'selected' : ''; ?>>Tutor</option>
+                                    <option value="advisor" <?php echo $staff['role'] === 'advisor' ? 'selected' : ''; ?>>Advisor</option>
+                                    <option value="hod" <?php echo $staff['role'] === 'hod' ? 'selected' : ''; ?>>HOD</option>
+                                    <option value="none" <?php echo $staff['role'] === 'none' ? 'selected' : ''; ?>>None</option>
+                                </select>
                             </div>
                             <button type="submit" name="update_profile" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
                                 Update Profile

@@ -23,6 +23,7 @@ $createTableSQL = "CREATE TABLE IF NOT EXISTS staff (
     password VARCHAR(255) NOT NULL,
     department VARCHAR(100) NOT NULL,
     designation VARCHAR(100) NOT NULL,
+    role ENUM('tutor', 'advisor', 'hod', 'none') DEFAULT 'none',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
 

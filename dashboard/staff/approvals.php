@@ -18,7 +18,11 @@ $conn = new mysqli($host, $user, $pass, $staff_db);
 $student_conn = new mysqli($host, $user, $pass, $student_db);
 
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die("Staff DB Connection failed: " . $conn->connect_error);
+}
+
+if ($student_conn->connect_error) {
+    die("Student DB Connection failed: " . $student_conn->connect_error);
 }
 
 // Get staff details
@@ -32,37 +36,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
     $activity_id = (int)$_POST['activity_id'];
     $action = $_POST['action'];
     
-    if ($action === 'approve' || $action === 'reject') {
-        $status = $action === 'approve' ? 'approved' : 'rejected';
-        $sql = "UPDATE activities SET status = ? WHERE id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("si", $status, $activity_id);
-        
-        if ($stmt->execute()) {
-            // Update student's activity count if approved
-            if ($action === 'approve') {
-                $sql = "UPDATE students s 
+    // Get current activity status
+    $check_sql = "SELECT status, file_path FROM activities WHERE id = ?";
+    $check_stmt = $student_conn->prepare($check_sql);
+    $check_stmt->bind_param("i", $activity_id);
+    $check_stmt->execute();
+    $activity = $check_stmt->get_result()->fetch_assoc();
+    
+    if ($action === 'reject') {
+        $new_status = 'rejected';
+    } else {
+        // Determine new status based on current status and staff role
+        switch($staff['role']) {
+            case 'tutor':
+                $new_status = 'tutor_approved';
+                break;
+            case 'advisor':
+                if ($activity['status'] === 'tutor_approved') {
+                    $new_status = 'advisor_approved';
+                } else {
+                    header("Location: approvals.php?error=invalid_status");
+                    exit();
+                }
+                break;
+            case 'hod':
+                if ($activity['status'] === 'hod_approved' && empty($activity['file_path'])) {
+                    header("Location: approvals.php?error=no_file");
+                    exit();
+                } else if ($activity['status'] === 'advisor_approved') {
+                    $new_status = 'hod_approved';
+                } else if ($activity['status'] === 'hod_approved' && !empty($activity['file_path'])) {
+                    $new_status = 'approved';
+                    // Update student's activity count when fully approved
+                    $update_sql = "UPDATE students s 
                         JOIN activities a ON s.id = a.student_id 
                         SET s.activity_count = s.activity_count + 1 
                         WHERE a.id = ?";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("i", $activity_id);
-                $stmt->execute();
-            }
-            
+                    $update_stmt = $student_conn->prepare($update_sql);
+                    $update_stmt->bind_param("i", $activity_id);
+                    $update_stmt->execute();
+                } else {
+                    header("Location: approvals.php?error=invalid_status");
+                    exit();
+                }
+                break;
+            default:
+                header("Location: approvals.php?error=invalid_role");
+                exit();
+        }
+    }
+    
+    // Update activity status
+    $sql = "UPDATE activities SET status = ? WHERE id = ?";
+    $stmt = $student_conn->prepare($sql);
+    $stmt->bind_param("si", $new_status, $activity_id);
+    
+    if ($stmt->execute()) {
             header("Location: approvals.php?success=1");
             exit();
-        }
     }
 }
 
-// Get pending activities with student names
+// Get activities based on staff role
+switch($staff['role']) {
+    case 'tutor':
 $sql = "SELECT a.*, s.name as student_name 
         FROM activities a 
         JOIN students s ON a.student_id = s.id 
         WHERE a.status = 'pending' 
-        ORDER BY a.date DESC";
-$result = $conn->query($sql);
+                ORDER BY a.date_from DESC";
+        break;
+    case 'advisor':
+        $sql = "SELECT a.*, s.name as student_name 
+                FROM activities a 
+                JOIN students s ON a.student_id = s.id 
+                WHERE a.status = 'tutor_approved' 
+                ORDER BY a.date_from DESC";
+        break;
+    case 'hod':
+        $sql = "SELECT a.*, s.name as student_name 
+                FROM activities a 
+                JOIN students s ON a.student_id = s.id 
+                WHERE (a.status = 'advisor_approved') 
+                OR (a.status = 'hod_approved' AND a.file_path IS NOT NULL)
+                ORDER BY a.date_from DESC";
+        break;
+    default:
+        $sql = "SELECT a.*, s.name as student_name 
+                FROM activities a 
+                JOIN students s ON a.student_id = s.id 
+                WHERE 1=0"; // No activities for invalid roles
+}
+
+$result = $student_conn->query($sql);
 $pending_activities = [];
 while ($row = $result->fetch_assoc()) {
     $pending_activities[] = $row;
@@ -169,6 +235,7 @@ while ($row = $result->fetch_assoc()) {
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Student</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Title</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
@@ -179,12 +246,58 @@ while ($row = $result->fetch_assoc()) {
                                             <div class="text-sm font-medium text-gray-900 dark:text-white"><?php echo htmlspecialchars($activity['student_name']); ?></div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo htmlspecialchars($activity['title']); ?></div>
+                                            <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo htmlspecialchars($activity['event_name']); ?></div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo $activity['date']; ?></div>
+                                            <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo $activity['date_from']; ?></div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
+                                            <?php
+                                            $statusClass = '';
+                                            $statusText = '';
+                                            switch($activity['status']) {
+                                                case 'pending':
+                                                    $statusClass = 'bg-yellow-100 text-yellow-800';
+                                                    $statusText = 'Pending';
+                                                    break;
+                                                case 'tutor_approved':
+                                                    $statusClass = 'bg-blue-100 text-blue-800';
+                                                    $statusText = 'Tutor Approved';
+                                                    break;
+                                                case 'advisor_approved':
+                                                    $statusClass = 'bg-purple-100 text-purple-800';
+                                                    $statusText = 'Advisor Approved';
+                                                    break;
+                                                case 'hod_approved':
+                                                    $statusClass = 'bg-indigo-100 text-indigo-800';
+                                                    $statusText = 'HOD Approved';
+                                                    break;
+                                                case 'approved':
+                                                    $statusClass = 'bg-green-100 text-green-800';
+                                                    $statusText = 'Approved';
+                                                    break;
+                                                case 'rejected':
+                                                    $statusClass = 'bg-red-100 text-red-800';
+                                                    $statusText = 'Rejected';
+                                                    break;
+                                            }
+                                            ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $statusClass; ?>">
+                                                <?php echo $statusText; ?>
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <?php if ($staff['role'] === 'hod' && $activity['status'] === 'hod_approved'): ?>
+                                                <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                                                    <?php if (!empty($activity['file_path'])): ?>
+                                                        <a href="../../uploads/students/<?php echo htmlspecialchars($activity['file_path']); ?>" target="_blank" class="text-blue-600 hover:text-blue-800">
+                                                            View Uploaded File
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <span class="text-red-600">No file uploaded yet</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php endif; ?>
                                             <form method="post" class="flex space-x-2">
                                                 <input type="hidden" name="activity_id" value="<?php echo $activity['id']; ?>">
                                                 <button type="submit" name="action" value="approve" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
