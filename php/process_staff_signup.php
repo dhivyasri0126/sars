@@ -50,9 +50,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     VALUES ('$name', '$email', '$hashed_password', '$department', '$designation')";
             
             if ($conn->query($sql) === TRUE) {
-                $success = "Registration successful! You can now login.";
-                // Redirect to login page after successful registration
-                header("Location: staff_login.php?success=1");
+                // Get the staff ID of the newly created account
+                $staff_id = $conn->insert_id;
+                
+                // Set session variables for the new staff member
+                $_SESSION['staff_id'] = $staff_id;
+                $_SESSION['staff_name'] = $name;
+                $_SESSION['staff_email'] = $email;
+                $_SESSION['staff_department'] = $department;
+                $_SESSION['staff_designation'] = $designation;
+                
+                // Redirect to staff dashboard
+                header("Location: ../dashboard/staff/index.php");
                 exit();
             } else {
                 $error = "Error: " . $conn->error;

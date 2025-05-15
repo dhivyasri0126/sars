@@ -100,11 +100,10 @@ $conn->close();
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Profile</h1>
             <div class="flex flex-col items-end">
                 <?php
-                $student_name = $_SESSION['first_name'] ?? '';
-                $student_lname = $_SESSION['last_name'] ?? '';
+                $student_name = $_SESSION['name'] ?? '';
                 $reg_number = $_SESSION['reg_number'] ?? '';
                 ?>
-                <span class="font-bold text-gray-800 dark:text-white"><?php echo htmlspecialchars($student_name . ' ' . $student_lname); ?></span>
+                <span class="font-bold text-gray-800 dark:text-white"><?php echo htmlspecialchars($student_name); ?></span>
                 <span class="text-xs text-gray-500 dark:text-gray-300"><?php echo htmlspecialchars($reg_number); ?></span>
             </div>
             <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">

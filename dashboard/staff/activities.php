@@ -7,25 +7,28 @@ if (!isset($_SESSION['staff_id'])) {
     exit();
 }
 
-// Database connection
+// Database connections
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db_students = "student_portal";
-$db_staff = "staff_signup";
 
-// Two connections: one for staff, one for students/activities
-$conn_staff = new mysqli($host, $user, $pass, $db_staff);
-$conn_students = new mysqli($host, $user, $pass, $db_students);
+// Connect to staff_signup database for staff details
+$staff_db = "staff_signup";
+$conn_staff = new mysqli($host, $user, $pass, $staff_db);
 
 if ($conn_staff->connect_error) {
     die("Staff DB Connection failed: " . $conn_staff->connect_error);
 }
-if ($conn_students->connect_error) {
-    die("Student DB Connection failed: " . $conn_students->connect_error);
+
+// Connect to student_portal database for activities and students
+$student_db = "student_portal";
+$conn = new mysqli($host, $user, $pass, $student_db);
+
+if ($conn->connect_error) {
+    die("Student DB Connection failed: " . $conn->connect_error);
 }
 
-// Get staff details
+// Get staff details from staff_signup database
 $staff_id = $_SESSION['staff_id'];
 $sql = "SELECT * FROM staff WHERE id = $staff_id";
 $result = $conn_staff->query($sql);
@@ -59,16 +62,17 @@ $params = [];
 $types = "";
 
 if (isset($_GET['search']) && !empty($_GET['search'])) {
-    $search = "%" . $conn_students->real_escape_string($_GET['search']) . "%";
-    $where_conditions[] = "(a.title LIKE ? OR s.name LIKE ?)";
+    $search = "%" . $conn->real_escape_string($_GET['search']) . "%";
+    $where_conditions[] = "(a.event_name LIKE ? OR s.name LIKE ? OR s.reg_number LIKE ?)";
     $params[] = $search;
     $params[] = $search;
-    $types .= "ss";
+    $params[] = $search;
+    $types .= "sss";
 }
 
 if (isset($_GET['department']) && !empty($_GET['department'])) {
     $where_conditions[] = "s.department = ?";
-    $params[] = $conn_students->real_escape_string($_GET['department']);
+    $params[] = $conn->real_escape_string($_GET['department']);
     $types .= "s";
 }
 
@@ -80,22 +84,30 @@ if (isset($_GET['batch']) && !empty($_GET['batch'])) {
 }
 
 if (isset($_GET['event_type']) && !empty($_GET['event_type'])) {
-    $where_conditions[] = "a.event_type = ?";
-    $params[] = $conn_students->real_escape_string($_GET['event_type']);
+    $where_conditions[] = "a.activity_type = ?";
+    $params[] = $conn->real_escape_string($_GET['event_type']);
     $types .= "s";
 }
 
-$sql = "SELECT a.*, s.name as student_name, s.reg_number, s.department, s.academic_year, 
-        COALESCE(a.event_type, 'Not Specified') as event_type 
+// Main query to fetch activities with student details
+$sql = "SELECT a.*, s.name, s.reg_number, s.department, s.academic_year,
+        CASE 
+            WHEN a.file_path IS NOT NULL THEN 'Uploaded'
+            WHEN a.status = 'pending' THEN 'Pending'
+            ELSE 'Not Uploaded'
+        END as upload_status
         FROM activities a 
-        JOIN students s ON a.id = s.id";
+        JOIN students s ON a.student_id = s.id";
 
 if (!empty($where_conditions)) {
     $sql .= " WHERE " . implode(" AND ", $where_conditions);
 }
 $sql .= " ORDER BY a.date_from DESC";
 
-$stmt = $conn_students->prepare($sql);
+// Debug output
+echo "<!-- Debug: SQL Query = " . htmlspecialchars($sql) . " -->";
+
+$stmt = $conn->prepare($sql);
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
 }
@@ -105,6 +117,9 @@ $activities = [];
 while ($row = $result->fetch_assoc()) {
     $activities[] = $row;
 }
+
+// Debug output
+echo "<!-- Debug: Number of activities found = " . count($activities) . " -->";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -285,62 +300,62 @@ while ($row = $result->fetch_assoc()) {
 
                 <!-- Activities Table -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                    <div class="p-6">
-                        <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Activity List</h2>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Student</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Department</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Batch</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Activity</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Event Type</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <?php foreach ($activities as $activity): ?>
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-gray-900 dark:text-white"><?php echo htmlspecialchars($activity['student_name']); ?></div>
-                                            <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo htmlspecialchars($activity['reg_number']); ?></div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo htmlspecialchars($activity['department']); ?></div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo $activity['academic_year'] . '-' . ($activity['academic_year'] + 4); ?></div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo htmlspecialchars($activity['event_name']); ?></div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo htmlspecialchars($activity['event_type']); ?></div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo date('d M Y', strtotime($activity['date_from'])); ?></div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                <?php echo $activity['status'] === 'approved' ? 'bg-green-100 text-green-800' : 
-                                                    ($activity['status'] === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'); ?>">
-                                                <?php echo ucfirst($activity['status']); ?>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Student</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Event</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                <?php foreach ($activities as $activity): ?>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($activity['name']); ?></div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo htmlspecialchars($activity['reg_number']); ?></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($activity['event_name']); ?></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($activity['activity_type']); ?></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?php echo date('M d, Y', strtotime($activity['date_from'])); ?></td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <?php if($activity['upload_status'] == 'Uploaded'): ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                <i class="fas fa-check mr-1"></i> Uploaded
                                             </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-500 dark:text-gray-400">
-                                                <a href="edit_activity.php?id=<?php echo htmlspecialchars($activity['id']); ?>" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</a>
-                                                <a href="delete_activity.php?id=<?php echo htmlspecialchars($activity['id']); ?>" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this activity?');">Delete</a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                        <?php elseif($activity['upload_status'] == 'Pending'): ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                <i class="fas fa-clock mr-1"></i> Pending
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                <i class="fas fa-times mr-1"></i> Not Uploaded
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <?php if($activity['file_path']): ?>
+                                            <a href="../../dashboard/student/view_file.php?file=<?php echo urlencode($activity['file_path']); ?>" 
+                                               class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3"
+                                               target="_blank">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        <?php endif; ?>
+                                        <?php if($activity['upload_status'] == 'Pending'): ?>
+                                            <a href="approve_activity.php?id=<?php echo $activity['id']; ?>" 
+                                               class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
+                                                <i class="fas fa-check"></i> Approve
+                                            </a>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </main>
@@ -362,4 +377,4 @@ while ($row = $result->fetch_assoc()) {
     </script>
 </body>
 </html> 
-<?php $conn_staff->close(); $conn_students->close(); ?> 
+<?php $conn->close(); ?> 

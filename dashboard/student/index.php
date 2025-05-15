@@ -30,7 +30,7 @@ if ($stmt->fetch()) {
 $stmt->close();
 
 // 2. Last participated event
-$sql = "SELECT event_name FROM activities WHERE register_no = ? ORDER BY date_to DESC LIMIT 1";
+$sql = "SELECT event_name FROM activities WHERE reg_number = ? ORDER BY date_to DESC LIMIT 1";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $reg_number);
 $stmt->execute();
@@ -41,7 +41,7 @@ if ($stmt->fetch()) {
 $stmt->close();
 
 // 3. Total events participated
-$sql = "SELECT COUNT(*) FROM activities WHERE register_no = ?";
+$sql = "SELECT COUNT(*) FROM activities WHERE reg_number = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $reg_number);
 $stmt->execute();
@@ -52,7 +52,7 @@ if ($stmt->fetch()) {
 $stmt->close();
 
 // 4. Prizes won
-$sql = "SELECT COUNT(*) FROM activities WHERE register_no = ? AND award IS NOT NULL AND award != ''";
+$sql = "SELECT COUNT(*) FROM activities WHERE reg_number = ? AND award IS NOT NULL AND award != ''";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $reg_number);
 $stmt->execute();
@@ -66,7 +66,7 @@ $monthly_participation = array_fill(1, 12, 0); // Months 1-12 (Jan to Dec)
 
 $sql = "SELECT MONTH(date_to) AS month, COUNT(*) AS count
         FROM activities
-        WHERE register_no = ?
+        WHERE reg_number = ?
         GROUP BY MONTH(date_to)";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $reg_number);
@@ -154,11 +154,10 @@ $conn->close();
             <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
             <div class="flex flex-col items-end">
                 <?php
-                $student_name = $_SESSION['first_name'] ?? '';
-                $student_lname = $_SESSION['last_name'] ?? '';
+                $student_name = $_SESSION['name'] ?? '';
                 $reg_number = $_SESSION['reg_number'] ?? '';
                 ?>
-                <span class="font-bold text-gray-800 dark:text-white"><?php echo htmlspecialchars($student_name . ' ' . $student_lname); ?></span>
+                <span class="font-bold text-gray-800 dark:text-white"><?php echo htmlspecialchars($student_name); ?></span>
                 <span class="text-xs text-gray-500 dark:text-gray-300"><?php echo htmlspecialchars($reg_number); ?></span>
             </div>
             <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
@@ -222,7 +221,7 @@ $conn->close();
                         if ($conn->connect_error) {
                             die("Connection failed: " . $conn->connect_error);
                         }
-                        $sql = "SELECT activity_type, event_name, date_from, date_to, award, status FROM activities WHERE register_no = ? ORDER BY date_to DESC";
+                        $sql = "SELECT activity_type, event_name, date_from, date_to, award, status FROM activities WHERE reg_number = ? ORDER BY date_to DESC";
                         $stmt = $conn->prepare($sql);
                         $stmt->bind_param("s", $reg_number);
                         $stmt->execute();

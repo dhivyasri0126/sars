@@ -9,11 +9,21 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 // Get reg_number from session (or fallback for testing)
-$reg_number = $_SESSION['reg_number'] ?? '710724104042';
-// Fetch only this student's activities
-$sql = "SELECT date_from, event_name, event_type, college, award FROM activities WHERE register_no = ? ORDER BY date_from DESC";
+$reg_number = $_SESSION['reg_number'] ?? '';
+
+// First get the student's ID
+$sql = "SELECT id FROM students WHERE reg_number = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $reg_number);
+$stmt->execute();
+$student_result = $stmt->get_result();
+$student = $student_result->fetch_assoc();
+$student_id = $student['id'];
+
+// Fetch activities for this student
+$sql = "SELECT date_from, date_to, event_name, activity_type, file_path FROM activities WHERE student_id = ? ORDER BY date_from DESC";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $student_id);
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
@@ -88,11 +98,11 @@ $result = $stmt->get_result();
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Event</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Event Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">College</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Awards/Prizes Won</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Start Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">End Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Event Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Activity Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Certificate</th>
                         </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -100,11 +110,23 @@ $result = $stmt->get_result();
                         if ($result && $result->num_rows > 0) {
                             while ($row = $result->fetch_assoc()) {
                                 echo "<tr>";
-                                echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . htmlspecialchars($row['date_from']) . "</td>";
+                                echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . date('M d, Y', strtotime($row['date_from'])) . "</td>";
+                                echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . date('M d, Y', strtotime($row['date_to'])) . "</td>";
                                 echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . htmlspecialchars($row['event_name']) . "</td>";
-                                echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . htmlspecialchars($row['event_type']) . "</td>";
-                                echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . htmlspecialchars($row['college']) . "</td>";
-                                echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . ($row['award'] ? htmlspecialchars($row['award']) : 'No') . "</td>";
+                                echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . htmlspecialchars($row['activity_type']) . "</td>";
+                                echo "<td class='px-6 py-4 whitespace-nowrap text-sm'>";
+                                if (!empty($row['file_path'])) {
+                                    $file_extension = strtolower(pathinfo($row['file_path'], PATHINFO_EXTENSION));
+                                    if (in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                                        echo "<span class='text-green-600 dark:text-green-400'><i class='fas fa-image'></i> Uploaded</span>";
+                                    } else {
+                                        echo "<span class='text-green-600 dark:text-green-400'><i class='fas fa-file-pdf'></i> Uploaded</span>";
+                                    }
+                                    echo " <button onclick='previewFile(\"" . htmlspecialchars($row['file_path']) . "\", \"" . $file_extension . "\")' class='ml-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300'><i class='fas fa-eye'></i> Preview</button>";
+                                } else {
+                                    echo "<a href='upload.php' class='text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300'><i class='fas fa-upload'></i> Upload Certificate</a>";
+                                }
+                                echo "</td>";
                                 echo "</tr>";
                             }
                         } else {
@@ -118,6 +140,29 @@ $result = $stmt->get_result();
         </main>
     </div>
 </div>
+
+<!-- Preview Modal -->
+<div id="previewModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+    <div class="relative mx-auto p-3 border w-11/12 max-w-7xl shadow-2xl rounded-md bg-white dark:bg-gray-800">
+        <div class="mt-2">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-xl font-medium text-gray-900 dark:text-white">File Preview</h3>
+                <button onclick="closePreview()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mt-1">
+                <div id="pdfPreview" class="hidden">
+                    <iframe id="pdfFrame" class="w-full h-[85vh]" frameborder="0"></iframe>
+                </div>
+                <div id="imagePreview" class="hidden">
+                    <img id="previewImage" src="" alt="Preview" class="max-w-full h-auto mx-auto max-h-[85vh] object-contain">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     // Dark mode toggle
     const darkModeToggle = document.getElementById('darkModeToggle');
@@ -128,6 +173,44 @@ $result = $stmt->get_result();
     darkModeToggle.addEventListener('click', () => {
         html.classList.toggle('dark');
         localStorage.setItem('darkMode', html.classList.contains('dark'));
+    });
+
+    // File preview functions
+    function previewFile(filePath, fileType) {
+        const modal = document.getElementById('previewModal');
+        const pdfPreview = document.getElementById('pdfPreview');
+        const imagePreview = document.getElementById('imagePreview');
+        const pdfFrame = document.getElementById('pdfFrame');
+        const previewImage = document.getElementById('previewImage');
+
+        modal.classList.remove('hidden');
+        
+        if (fileType === 'pdf') {
+            pdfPreview.classList.remove('hidden');
+            imagePreview.classList.add('hidden');
+            pdfFrame.src = 'view_file.php?file=' + encodeURIComponent(filePath);
+        } else {
+            pdfPreview.classList.add('hidden');
+            imagePreview.classList.remove('hidden');
+            previewImage.src = 'view_file.php?file=' + encodeURIComponent(filePath);
+        }
+    }
+
+    function closePreview() {
+        const modal = document.getElementById('previewModal');
+        const pdfFrame = document.getElementById('pdfFrame');
+        const previewImage = document.getElementById('previewImage');
+        
+        modal.classList.add('hidden');
+        pdfFrame.src = '';
+        previewImage.src = '';
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('previewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePreview();
+        }
     });
 </script>
 </body>

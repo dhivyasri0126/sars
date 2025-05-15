@@ -11,9 +11,11 @@ if (!isset($_SESSION['staff_id'])) {
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db = "staff_signup";
+$staff_db = "staff_signup";
+$student_db = "student_portal";
 
-$conn = new mysqli($host, $user, $pass, $db);
+$conn = new mysqli($host, $user, $pass, $staff_db);
+$student_conn = new mysqli($host, $user, $pass, $student_db);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);

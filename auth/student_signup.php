@@ -41,8 +41,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['hostel_day'] = $hostel_day;
         $_SESSION['address'] = $address;
         $_SESSION['email'] = $email;
-        // Redirect to profile page
-        header('Location: ../dashboard/student/profile.php');
+        // Redirect to dashboard
+        header('Location: ../dashboard/student/index.php');
         exit();
     } else {
         echo "<script>alert('Error: " . $stmt->error . "');</script>";
@@ -289,8 +289,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div class="col">
                         </div>
                     </div>
-                    <button type="submit">Submit</button>
-                    <a href="student_login.php" style="color: white;">Already registered? <u>Login here</u></a>
+                    <!-- Address Fields -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Address Information</h3>
+                        
+                        <!-- Street Address -->
+                        <div>
+                            <label for="street" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+                            <input type="text" name="street" id="street" required
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                                placeholder="Enter your address">
+                        </div>
+
+                        <!-- City and State -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="city" class="block text-sm font-medium text-gray-700 dark:text-gray-300">City</label>
+                                <input type="text" name="city" id="city" required
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                                    placeholder="Enter your city">
+                            </div>
+                            <div>
+                                <label for="state" class="block text-sm font-medium text-gray-700 dark:text-gray-300">State</label>
+                                <input type="text" name="state" id="state" required
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                                    placeholder="Enter your state" value="Tamil Nadu">
+                            </div>
+                        </div>
+
+                        <!-- Pincode and Country -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="pincode" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pincode</label>
+                                <input type="text" name="pincode" id="pincode" required
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                                    placeholder="Enter your pincode">
+                            </div>
+                            <div>
+                                <label for="country" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Country</label>
+                                <input type="text" name="country" id="country" required
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                                    placeholder="Enter your country" value="India">
+                            </div>
+                        </div>
+
+                        <!-- Hidden field for complete address -->
+                        <input type="hidden" name="address" id="complete_address">
+                    </div>
+                    <button type="submit">Submit</button><br><br>
+                    <a href="student_login.php" style="color: black;">Already registered? <u>Login here</u></a>
                 </form>
     </div>
 
@@ -305,6 +352,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     alert("Passwords do not match!");
                 }
             });
+        });
+
+        // Combine address fields on form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const street = document.getElementById('street').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const pincode = document.getElementById('pincode').value;
+            const country = document.getElementById('country').value;
+            
+            const completeAddress = `${street}, ${city}, ${state} - ${pincode}, ${country}`;
+            document.getElementById('complete_address').value = completeAddress;
         });
     </script>
 </body>

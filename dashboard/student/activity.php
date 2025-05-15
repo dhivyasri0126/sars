@@ -2,6 +2,59 @@
 // Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
+session_start();
+if (!isset($_SESSION['reg_number'])) {
+    header('Location: ../../auth/student_login.php');
+    exit();
+}
+
+// DB connection
+$conn = new mysqli("localhost", "root", "", "student_portal");
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$reg_number = $_SESSION['reg_number'];
+
+// Fetch student details
+$sql = "SELECT id, name FROM students WHERE reg_number = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $reg_number);
+$stmt->execute();
+$result = $stmt->get_result();
+$student = $result->fetch_assoc();
+$stmt->close();
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $activity_type = $_POST['activity_type'];
+    $event_name = $_POST['event_name'];
+    $date_from = $_POST['date_from'];
+    $date_to = $_POST['date_to'];
+    $student_id = $student['id']; // Use the student's ID from the database
+
+    $sql = "INSERT INTO activities (student_id, activity_type, event_name, date_from, date_to) VALUES (?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("issss", $student_id, $activity_type, $event_name, $date_from, $date_to);
+    
+    if ($stmt->execute()) {
+        $success_message = "Activity added successfully!";
+    } else {
+        $error_message = "Error adding activity: " . $conn->error;
+    }
+    $stmt->close();
+}
+
+// Fetch existing activities
+$sql = "SELECT * FROM activities WHERE student_id = ? ORDER BY date_to DESC";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $student['id']);
+$stmt->execute();
+$result = $stmt->get_result();
+$activities = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -53,70 +106,88 @@ ini_set('display_errors', 1);
                 <!-- Top Navigation -->
                 <header class="bg-white dark:bg-gray-800 shadow flex items-center justify-between px-6 py-4">
                     <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Activity Participation</h1>
-                    <div class="flex flex-col items-end">
-                        <?php
-                        session_start();
-                        $student_name = $_SESSION['first_name'] ?? '';
-                        $student_lname = $_SESSION['last_name'] ?? '';
-                        $reg_number = $_SESSION['reg_number'] ?? '';
-                        ?>
-                        <span class="font-bold text-gray-800 dark:text-white"><?php echo htmlspecialchars($student_name . ' ' . $student_lname); ?></span>
-                        <span class="text-xs text-gray-500 dark:text-gray-300"><?php echo htmlspecialchars($reg_number); ?></span>
-                    </div>
                     <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                         <i class="fas fa-moon dark:hidden"></i>
                         <i class="fas fa-sun hidden dark:block text-yellow-400"></i>
                     </button>
                 </header>
                 <main class="p-6">
-                    <div id="successAlert" class="hidden mb-4 p-4 rounded-lg bg-green-100 border border-green-400 text-green-700"></div>
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 max-w-3xl mx-auto">
-                        <form id="activityForm" action="form.php" method="post" class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <div class="mb-4">
-                                        <label for="activity" class="block text-gray-700 dark:text-gray-300 mb-2">Activity</label>
-                                        <select id="activity" name="activity" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                            <option value="ex-curricular">Extra-curricular</option>
-                                            <option value="co-curricular">Co-curricular</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-4">
-                                        <label for="date-from" class="block text-gray-700 dark:text-gray-300 mb-2">Date of Participation - From</label>
-                                        <input type="date" id="date-from" name="date-from" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="mb-4">
-                                        <label for="date-to" class="block text-gray-700 dark:text-gray-300 mb-2">To</label>
-                                        <input type="date" id="date-to" name="date-to" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    </div>
-                                    <div class="mb-4">
-                                        <label for="college" class="block text-gray-700 dark:text-gray-300 mb-2">College of Participation</label>
-                                        <input type="text" id="college" name="college" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    </div>
-                                    <div class="mb-4">
-                                        <label for="activity-type" class="block text-gray-700 dark:text-gray-300 mb-2">Event</label>
-                                        <select id="activity-type" name="activity-type" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                            <option value="technical">Technical</option>
-                                            <option value="non-technical">Non-Technical</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-4">
-                                        <label for="event-name" class="block text-gray-700 dark:text-gray-300 mb-2">Event Name</label>
-                                        <input type="text" id="event-name" name="event-name" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    </div>
-                                    <div class="mb-4">
-                                        <label for="award" class="block text-gray-700 dark:text-gray-300 mb-2">Awards/Prizes won</label>
-                                        <select id="award" name="award" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                            <option value="yes">Yes</option>
-                                            <option value="no">No</option>
-                                        </select>
-                                    </div>
-                                </div>
+                    <?php if (isset($success_message)): ?>
+                        <div class="mb-4 p-4 rounded-lg bg-green-100 border border-green-400 text-green-700">
+                            <?php echo $success_message; ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if (isset($error_message)): ?>
+                        <div class="mb-4 p-4 rounded-lg bg-red-100 border border-red-400 text-red-700">
+                            <?php echo $error_message; ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 max-w-2xl mx-auto">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Add New Activity</h2>
+                        <form method="post" class="space-y-4">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+                                <input type="text" id="name" value="<?php echo htmlspecialchars($student['name']); ?>" 
+                                       class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white py-2 px-4 text-base" 
+                                       disabled>
                             </div>
-                            <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 w-full">Submit</button>
+                            <div>
+                                <label for="activity_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Activity Type</label>
+                                <select name="activity_type" id="activity_type" required
+                                        class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white py-2 px-4 text-base">
+                                    <option value="">Select Activity Type</option>
+                                    <option value="Academic">Academic</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Cultural">Cultural</option>
+                                    <option value="Technical">Technical</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="event_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Event Name</label>
+                                <input type="text" name="event_name" id="event_name" required
+                                       class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white py-2 px-4 text-base">
+                            </div>
+                            <div>
+                                <label for="date_from" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                                <input type="date" name="date_from" id="date_from" required
+                                       class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white py-2 px-4 text-base">
+                            </div>
+                            <div>
+                                <label for="date_to" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                                <input type="date" name="date_to" id="date_to" required
+                                       class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white py-2 px-4 text-base">
+                            </div>
+                            <div>
+                                <button type="submit" class="w-full bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 text-base font-medium">
+                                    Add Activity
+                                </button>
+                            </div>
                         </form>
+                    </div>
+
+                    <!-- Existing Activities -->
+                    <div class="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-4 max-w-2xl mx-auto">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-3">Your Activities</h2>
+                        <?php if (empty($activities)): ?>
+                            <p class="text-gray-600 dark:text-gray-400">No activities found.</p>
+                        <?php else: ?>
+                            <div class="space-y-3">
+                                <?php foreach ($activities as $activity): ?>
+                                    <div class="border dark:border-gray-700 rounded-lg p-3">
+                                        <div class="space-y-1">
+                                            <h3 class="font-semibold text-gray-800 dark:text-white"><?php echo htmlspecialchars($activity['activity_type']); ?></h3>
+                                            <p class="text-gray-600 dark:text-gray-400"><?php echo htmlspecialchars($activity['event_name']); ?></p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                <?php echo date('M d, Y', strtotime($activity['date_from'])); ?> - 
+                                                <?php echo date('M d, Y', strtotime($activity['date_to'])); ?>
+                                            </p>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </main>
             </div>
@@ -131,26 +202,6 @@ ini_set('display_errors', 1);
             darkModeToggle.addEventListener('click', () => {
                 html.classList.toggle('dark');
                 localStorage.setItem('darkMode', html.classList.contains('dark'));
-            });
-            // AJAX form submission with success alert
-            document.getElementById('activityForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const form = this;
-                const formData = new FormData(form);
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.text())
-                .then(result => {
-                    document.getElementById('successAlert').textContent = 'Form submitted successfully!';
-                    document.getElementById('successAlert').classList.remove('hidden');
-                    form.reset();
-                })
-                .catch(error => {
-                    document.getElementById('successAlert').textContent = 'An error occurred while submitting the form.';
-                    document.getElementById('successAlert').classList.remove('hidden');
-                });
             });
         </script>
     </body>

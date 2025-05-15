@@ -7,26 +7,83 @@ if (!isset($_SESSION['staff_id'])) {
     exit();
 }
 
-// Database connection
+// Database connections
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db = "staff_signup";
 
-$conn = new mysqli($host, $user, $pass, $db);
+// Connect to staff_signup database for staff details
+$staff_db = "staff_signup";
+$conn_staff = new mysqli($host, $user, $pass, $staff_db);
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+if ($conn_staff->connect_error) {
+    die("Staff DB Connection failed: " . $conn_staff->connect_error);
 }
 
-// Get staff details
+// Connect to student_portal database for activities and students
+$student_db = "student_portal";
+$conn = new mysqli($host, $user, $pass, $student_db);
+
+if ($conn->connect_error) {
+    die("Student DB Connection failed: " . $conn->connect_error);
+}
+
+// Get staff details from staff_signup database
 $staff_id = $_SESSION['staff_id'];
 $sql = "SELECT * FROM staff WHERE id = $staff_id";
-$result = $conn->query($sql);
+$result = $conn_staff->query($sql);
 $staff = $result->fetch_assoc();
 
+// Get total activities count from student_portal database
+$sql = "SELECT COUNT(*) as total FROM activities";
+$result = $conn->query($sql);
+$total_activities = $result->fetch_assoc()['total'];
+
+// Get pending activities count
+$sql = "SELECT COUNT(*) as pending FROM activities WHERE status = 'pending'";
+$result = $conn->query($sql);
+$pending_activities = $result->fetch_assoc()['pending'];
+
+// Get uploaded activities count
+$sql = "SELECT COUNT(*) as uploaded FROM activities WHERE file_path IS NOT NULL";
+$result = $conn->query($sql);
+$uploaded_activities = $result->fetch_assoc()['uploaded'];
+
+// Get recent activities
+$sql = "SELECT a.*, s.name, s.reg_number 
+        FROM activities a 
+        JOIN students s ON a.student_id = s.id 
+        ORDER BY a.date_from DESC 
+        LIMIT 5";
+$result = $conn->query($sql);
+$recent_activities = [];
+while ($row = $result->fetch_assoc()) {
+    $recent_activities[] = $row;
+}
+
+// Get department-wise activity distribution
+$sql = "SELECT s.department, COUNT(*) as count 
+        FROM activities a 
+        JOIN students s ON a.student_id = s.id 
+        GROUP BY s.department";
+$result = $conn->query($sql);
+$department_stats = [];
+while ($row = $result->fetch_assoc()) {
+    $department_stats[] = $row;
+}
+
+// Get activity type distribution
+$sql = "SELECT activity_type, COUNT(*) as count 
+        FROM activities 
+        GROUP BY activity_type";
+$result = $conn->query($sql);
+$activity_type_stats = [];
+while ($row = $result->fetch_assoc()) {
+    $activity_type_stats[] = $row;
+}
+
 // Get statistics
-$totalStudents = $conn->query("SELECT COUNT(*) as count FROM student_portal.students")->fetch_assoc()['count'];
+$totalStudents = $conn->query("SELECT COUNT(*) as count FROM students")->fetch_assoc()['count'];
 $pendingApprovals = $conn->query("SELECT COUNT(*) as count FROM activities WHERE status = 'pending'")->fetch_assoc()['count'];
 $totalActivities = $conn->query("SELECT COUNT(*) as count FROM activities")->fetch_assoc()['count'];
 
@@ -34,8 +91,8 @@ $totalActivities = $conn->query("SELECT COUNT(*) as count FROM activities")->fet
 $recentActivities = $conn->query("
     SELECT a.*, s.name as student_name 
     FROM activities a 
-    JOIN student_portal.students s ON a.student_id = s.id 
-    ORDER BY a.date DESC 
+    JOIN students s ON a.student_id = s.id 
+    ORDER BY a.date_from DESC 
     LIMIT 5
 ");
 
@@ -364,10 +421,10 @@ error_log("Chart Data: " . print_r([
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <h4 class="font-semibold text-gray-800 dark:text-white"><?php echo htmlspecialchars($row['student_name']); ?></h4>
-                                        <p class="text-gray-600 dark:text-gray-400"><?php echo htmlspecialchars($row['title']); ?></p>
+                                        <p class="text-gray-600 dark:text-gray-400"><?php echo htmlspecialchars($row['event_name']); ?></p>
                                     </div>
                                     <div class="text-right">
-                                        <p class="text-sm text-gray-500 dark:text-gray-400"><?php echo $row['date']; ?></p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400"><?php echo $row['date_from']; ?></p>
                                         <span class="px-2 py-1 text-xs rounded-full <?php 
                                             echo $row['status'] === 'approved' ? 'bg-green-100 text-green-800' : 
                                                 ($row['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'); 
@@ -496,4 +553,5 @@ error_log("Chart Data: " . print_r([
     </script>
 </body>
 </html> 
+<?php $conn_staff->close(); ?>
 <?php $conn->close(); ?> 
