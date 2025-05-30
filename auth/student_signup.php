@@ -78,13 +78,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         .signup-container {
-            background-color: white;
+            background: rgba(255, 255, 255, 0.7);
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0px 10px 20px 0px rgba(50, 50, 50, 0.52);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
             max-width: 600px;
             width: 90%;
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .signup-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+            z-index: -1;
         }
         
         .signup-logo {
@@ -92,11 +106,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             height: 105px;
             margin-bottom: 10px;
             border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 5px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
         
         h2 {
-            color: black;
+            color: #1a1a1a;
             margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
         
         .form-group {
@@ -108,7 +126,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
-            padding:10px;
+            padding: 10px;
+            color: #1a1a1a;
         }
         
         input[type="text"],
@@ -117,28 +136,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         input[type="date"],
         select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
             border-radius: 20px;
             font-size: 16px;
             box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.8);
+            color: #1a1a1a;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            outline: none;
+            border: 1px solid rgba(0, 123, 255, 0.5);
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
+            background: rgba(255, 255, 255, 0.95);
         }
         
-/*        .row {
-            display: flex;
-            flex-wrap: wrap;
-            margin: 0 -10px;
-        
-        }
-        
-        .col {
-            flex: 1;
-            padding: 0 10px;
-            min-width: 200px;
-        }
-*/        
         button {
-            background-color: #007bff;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             color: white;
             padding: 15px;
             border: none;
@@ -147,11 +167,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             width: 100%;
             font-size: 16px;
             margin-top: 20px;
-
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
         
         button:hover {
-            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
         }
         
         .error-message {
@@ -257,12 +280,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 </select>
                             </div>
                         </div>
-                        <div class="col">
-                            <div class="form-control">
-                                <label for="Address">Address For Communication</label>
-                                <textarea placeholder="Enter your Address" name="Address" id="Address"></textarea>
-                            </div>
-                        </div>
                     </div>
                     <div class="row">
                         <div class="col">
@@ -362,7 +379,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             const pincode = document.getElementById('pincode').value;
             const country = document.getElementById('country').value;
             
-            const completeAddress = `${street}, ${city}, ${state} - ${pincode}, ${country}`;
+            const completeAddress = `${street}, ${city}, ${state}, ${country} - ${pincode}`;
             document.getElementById('complete_address').value = completeAddress;
         });
     </script>
