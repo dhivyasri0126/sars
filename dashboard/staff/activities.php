@@ -345,8 +345,8 @@ echo "<!-- Debug: Number of activities found = " . count($activities) . " -->";
                                             </a>
                                         <?php endif; ?>
                                         <?php if($activity['upload_status'] == 'Pending'): ?>
-                                            <a href="approve_activity.php?id=<?php echo $activity['id']; ?>" 
-                                               class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
+                                            <a href="approve_activity.php?id=<?php echo $activity['id']; ?>&action=approve" 
+                                               class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 mr-3">
                                                 <i class="fas fa-check"></i> Approve
                                             </a>
                                             <a href="approve_activity.php?id=<?php echo $activity['id']; ?>&action=reject" 
@@ -361,6 +361,17 @@ echo "<!-- Debug: Number of activities found = " . count($activities) . " -->";
                         </table>
                     </div>
                 </div>
+
+                <?php if(isset($_GET['message'])): ?>
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <span class="block sm:inline"><?php echo htmlspecialchars($_GET['message']); ?></span>
+                    </div>
+                <?php endif; ?>
+                <?php if(isset($_GET['error'])): ?>
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <span class="block sm:inline"><?php echo htmlspecialchars($_GET['error']); ?></span>
+                    </div>
+                <?php endif; ?>
             </main>
         </div>
     </div>
