@@ -221,11 +221,11 @@ $conn->close();
                         if ($conn->connect_error) {
                             die("Connection failed: " . $conn->connect_error);
                         }
-                        $sql = "SELECT activity_type, event_name, date_from, date_to, award, status FROM activities WHERE reg_number = ? ORDER BY date_to DESC";
+                        $sql = "SELECT activity_type, event_name, date_from, date_to, award, status, file_path FROM activities WHERE reg_number = ? ORDER BY date_to DESC";
                         $stmt = $conn->prepare($sql);
                         $stmt->bind_param("s", $reg_number);
                         $stmt->execute();
-                        $stmt->bind_result($activity_type, $event_name, $date_from, $date_to, $award, $status);
+                        $stmt->bind_result($activity_type, $event_name, $date_from, $date_to, $award, $status, $file_path);
                         while ($stmt->fetch()): ?>
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($activity_type); ?></td>
@@ -233,7 +233,28 @@ $conn->close();
                             <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($date_from); ?></td>
                             <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($date_to); ?></td>
                             <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($award); ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap"><?php echo ucfirst($status); ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                    <?php
+                                    if ($file_path) {
+                                        echo 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
+                                    } elseif ($status == 'pending') {
+                                        echo 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
+                                    } else {
+                                        echo 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+                                    }
+                                    ?>">
+                                    <?php
+                                    if ($file_path) {
+                                        echo 'Uploaded';
+                                    } elseif ($status == 'pending') {
+                                        echo 'Pending';
+                                    } else {
+                                        echo 'Not Uploaded';
+                                    }
+                                    ?>
+                                </span>
+                            </td>
                         </tr>
                         <?php endwhile; $stmt->close(); $conn->close(); ?>
                     </tbody>

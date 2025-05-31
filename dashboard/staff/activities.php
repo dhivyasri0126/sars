@@ -78,7 +78,7 @@ if (isset($_GET['department']) && !empty($_GET['department'])) {
 
 if (isset($_GET['batch']) && !empty($_GET['batch'])) {
     $batch_year = (int)$_GET['batch'];
-    $where_conditions[] = "s.year = ?";
+    $where_conditions[] = "s.acadamic_year = ?";
     $params[] = $batch_year;
     $types .= "i";
 }
@@ -322,20 +322,19 @@ echo "<!-- Debug: Number of activities found = " . count($activities) . " -->";
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($activity['event_name']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($activity['activity_type']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?php echo date('M d, Y', strtotime($activity['date_from'])); ?></td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <?php if($activity['upload_status'] == 'Uploaded'): ?>
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                <i class="fas fa-check mr-1"></i> Uploaded
-                                            </span>
-                                        <?php elseif($activity['upload_status'] == 'Pending'): ?>
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                                                <i class="fas fa-clock mr-1"></i> Pending
-                                            </span>
-                                        <?php else: ?>
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                                <i class="fas fa-times mr-1"></i> Not Uploaded
-                                            </span>
-                                        <?php endif; ?>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                            <?php
+                                            if ($activity['file_path']) {
+                                                echo 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
+                                            } elseif ($activity['status'] == 'pending') {
+                                                echo 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
+                                            } else {
+                                                echo 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+                                            }
+                                            ?>">
+                                            <?php echo $activity['upload_status']; ?>
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         <?php if($activity['file_path']): ?>

@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'] ?? '';
 
     // Prepare SQL statement
-    $sql = "SELECT reg_number, name, department, academic_year, section, dob, gender, mobile, hostel_day, address, email, password FROM students WHERE email = ?";
+    $sql = "SELECT reg_number, name, department, academic_year, section, dob, gender, mobile, hostel_day, address, email, password FROM students WHERE LOWER(email) = LOWER(?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $email);
     $stmt->execute();

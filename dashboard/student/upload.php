@@ -23,7 +23,7 @@ $student = $student_result->fetch_assoc();
 $student_id = $student['id'];
 
 // Fetch activities for the student
-$sql = "SELECT id, activity_type, event_name, date_from, date_to, file_path FROM activities WHERE student_id = ? ORDER BY date_to DESC";
+$sql = "SELECT id, activity_type, event_name, date_from, date_to, file_path, status FROM activities WHERE student_id = ? ORDER BY date_to DESC";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
@@ -128,7 +128,29 @@ $conn->close();
                                                     <?php echo date('M d, Y', strtotime($activity['date_to'])); ?>
                                                 </p>
                                             </div>
-                                            <div class="flex items-center space-x-2">
+                                            <div class="flex items-center space-x-4">
+                                                <div class="ml-4">
+                                                    <span class="px-3 py-1.5 rounded-full text-sm font-semibold
+                                                        <?php
+                                                        if ($activity['file_path']) {
+                                                            echo 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
+                                                        } elseif ($activity['status'] == 'pending') {
+                                                            echo 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
+                                                        } else {
+                                                            echo 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+                                                        }
+                                                        ?>">
+                                                        <?php
+                                                        if ($activity['file_path']) {
+                                                            echo 'Uploaded';
+                                                        } elseif ($activity['status'] == 'pending') {
+                                                            echo 'Pending';
+                                                        } else {
+                                                            echo 'Not Uploaded';
+                                                        }
+                                                        ?>
+                                                    </span>
+                                                </div>
                                                 <?php if (!empty($activity['file_path'])): ?>
                                                     <a href="view_file.php?file=<?php echo urlencode($activity['file_path']); ?>" target="_blank" 
                                                        class="text-blue-500 hover:text-blue-700">

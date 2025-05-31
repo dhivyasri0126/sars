@@ -21,7 +21,7 @@ $student = $student_result->fetch_assoc();
 $student_id = $student['id'];
 
 // Fetch activities for this student
-$sql = "SELECT date_from, date_to, event_name, activity_type, file_path FROM activities WHERE student_id = ? ORDER BY date_from DESC";
+$sql = "SELECT date_from, date_to, event_name, activity_type, file_path, status FROM activities WHERE student_id = ? ORDER BY date_from DESC";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
@@ -101,6 +101,7 @@ $result = $stmt->get_result();
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Start Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">End Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Event Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Activity Type</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Certificate</th>
                         </tr>
@@ -113,6 +114,16 @@ $result = $stmt->get_result();
                                 echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . date('M d, Y', strtotime($row['date_from'])) . "</td>";
                                 echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . date('M d, Y', strtotime($row['date_to'])) . "</td>";
                                 echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . htmlspecialchars($row['event_name']) . "</td>";
+                                echo "<td class='px-6 py-4 whitespace-nowrap text-sm'>";
+                                echo "<span class='px-2 py-1 rounded-full text-xs font-semibold ";
+                                if ($row['file_path']) {
+                                    echo "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'>Uploaded";
+                                } elseif ($row['status'] == 'pending') {
+                                    echo "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'>Pending";
+                                } else {
+                                    echo "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'>Not Uploaded";
+                                }
+                                echo "</span></td>";
                                 echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . htmlspecialchars($row['activity_type']) . "</td>";
                                 echo "<td class='px-6 py-4 whitespace-nowrap text-sm'>";
                                 if (!empty($row['file_path'])) {

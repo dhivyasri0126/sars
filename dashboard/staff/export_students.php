@@ -19,6 +19,7 @@ spl_autoload_register(function ($class) {
     }
 });
 require_once __DIR__ . '/../../vendor/tcpdf/tcpdf.php';
+require_once __DIR__ . '/SimpleXLSXGen.php';
 
 // Check if staff is logged in
 if (!isset($_SESSION['staff_id'])) {
@@ -176,42 +177,23 @@ function exportToPDF($selected_columns, $column_names, $students) {
  * Export data to Excel
  */
 function exportToExcel($selected_columns, $column_names, $students) {
-    // Create new Spreadsheet object
-    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
+    // Create new Excel generator
+    $xlsx = new SimpleXLSXGen('students.xlsx');
     
     // Add headers
-    $col = 'A';
-    foreach ($selected_columns as $column) {
-        $sheet->setCellValue($col . '1', $column_names[$column]);
-        $sheet->getStyle($col . '1')->getFont()->setBold(true);
-        $sheet->getStyle($col . '1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('F2F2F2');
-        $col++;
-    }
+    $headers = array_map(function($column) use ($column_names) {
+        return $column_names[$column];
+    }, $selected_columns);
+    $xlsx->addRow($headers);
     
-    // Add data
-    $row = 2;
+    // Add data rows
     foreach ($students as $student) {
-        $col = 'A';
-        foreach ($selected_columns as $column) {
-            $sheet->setCellValue($col . $row, $student[$column]);
-            $col++;
-        }
-        $row++;
+        $row = array_map(function($column) use ($student) {
+            return $student[$column];
+        }, $selected_columns);
+        $xlsx->addRow($row);
     }
     
-    // Auto-size columns
-    foreach (range('A', 'E') as $col) {
-        $sheet->getColumnDimension($col)->setAutoSize(true);
-    }
-    
-    // Set headers for download
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="students.xlsx"');
-    header('Cache-Control: max-age=0');
-    
-    // Create Excel file
-    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-    $writer->save('php://output');
-    exit;
+    // Download the file
+    $xlsx->download();
 } 

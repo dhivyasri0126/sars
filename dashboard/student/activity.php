@@ -176,13 +176,37 @@ $conn->close();
                             <div class="space-y-3">
                                 <?php foreach ($activities as $activity): ?>
                                     <div class="border dark:border-gray-700 rounded-lg p-3">
-                                        <div class="space-y-1">
-                                            <h3 class="font-semibold text-gray-800 dark:text-white"><?php echo htmlspecialchars($activity['activity_type']); ?></h3>
-                                            <p class="text-gray-600 dark:text-gray-400"><?php echo htmlspecialchars($activity['event_name']); ?></p>
-                                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                <?php echo date('M d, Y', strtotime($activity['date_from'])); ?> - 
-                                                <?php echo date('M d, Y', strtotime($activity['date_to'])); ?>
-                                            </p>
+                                        <div class="flex justify-between items-start">
+                                            <div class="space-y-1">
+                                                <h3 class="font-semibold text-gray-800 dark:text-white"><?php echo htmlspecialchars($activity['activity_type']); ?></h3>
+                                                <p class="text-gray-600 dark:text-gray-400"><?php echo htmlspecialchars($activity['event_name']); ?></p>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                    <?php echo date('M d, Y', strtotime($activity['date_from'])); ?> - 
+                                                    <?php echo date('M d, Y', strtotime($activity['date_to'])); ?>
+                                                </p>
+                                            </div>
+                                            <div class="ml-4">
+                                                <span class="px-3 py-1.5 rounded-full text-sm font-semibold
+                                                    <?php
+                                                    if ($activity['file_path']) {
+                                                        echo 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
+                                                    } elseif ($activity['status'] == 'pending') {
+                                                        echo 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
+                                                    } else {
+                                                        echo 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+                                                    }
+                                                    ?>">
+                                                    <?php
+                                                    if ($activity['file_path']) {
+                                                        echo 'Uploaded';
+                                                    } elseif ($activity['status'] == 'pending') {
+                                                        echo 'Pending';
+                                                    } else {
+                                                        echo 'Not Uploaded';
+                                                    }
+                                                    ?>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
