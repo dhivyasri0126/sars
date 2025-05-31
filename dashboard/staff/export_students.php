@@ -19,7 +19,6 @@ spl_autoload_register(function ($class) {
     }
 });
 require_once __DIR__ . '/../../vendor/tcpdf/tcpdf.php';
-require_once __DIR__ . '/SimpleXLSXGen.php';
 
 // Check if staff is logged in
 if (!isset($_SESSION['staff_id'])) {
@@ -177,23 +176,39 @@ function exportToPDF($selected_columns, $column_names, $students) {
  * Export data to Excel
  */
 function exportToExcel($selected_columns, $column_names, $students) {
-    // Create new Excel generator
-    $xlsx = new SimpleXLSXGen('students.xlsx');
+    // Set headers for CSV download
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="students_' . date('Y-m-d') . '.csv"');
+    
+    // Create output stream
+    $output = fopen('php://output', 'w');
+    
+    // Add UTF-8 BOM for proper Excel encoding
+    fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
     
     // Add headers
-    $headers = array_map(function($column) use ($column_names) {
-        return $column_names[$column];
-    }, $selected_columns);
-    $xlsx->addRow($headers);
+    $headers = array(
+        'Student ID',
+        'Name',
+        'Email',
+        'Course',
+        'Year Level',
+        'Status'
+    );
+    fputcsv($output, $headers);
     
     // Add data rows
     foreach ($students as $student) {
-        $row = array_map(function($column) use ($student) {
-            return $student[$column];
-        }, $selected_columns);
-        $xlsx->addRow($row);
+        fputcsv($output, array(
+            $student['reg_number'],
+            $student['name'],
+            $student['email'],
+            $student['department'],
+            $student['academic_year'],
+            $student['activities']
+        ));
     }
     
-    // Download the file
-    $xlsx->download();
+    fclose($output);
+    exit();
 } 

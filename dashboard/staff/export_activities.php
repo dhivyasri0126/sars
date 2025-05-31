@@ -94,7 +94,7 @@ $export_type = $_POST['export_type'];
 
 // Prepare data for export
 $data = [];
-$headers = ['Roll Number', 'Name', 'Department', 'Batch', 'Activity Type', 'Date', 'Description', 'Points'];
+$headers = ['Reg Number', 'Name', 'Department', 'Batch', 'Activity Type', 'Date From'];
 
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
@@ -104,9 +104,7 @@ if ($result && $result->num_rows > 0) {
             $row['department'],
             $row['academic_year'],
             $row['activity_type'],
-            $row['activity_date'],
-            $row['description'],
-            $row['points']
+            $row['date_from']
         ];
     }
 }
@@ -117,7 +115,7 @@ switch ($export_type) {
         exportToPDF($headers, $data);
         break;
     case 'excel':
-        exportToExcel($headers, $data);
+        exportToExcel($data);
         break;
     case 'word':
         exportToWord($headers, $data);
@@ -202,46 +200,35 @@ function exportToPDF($headers, $data) {
 /**
  * Export data to Excel
  */
-function exportToExcel($headers, $data) {
-    // PhpSpreadsheet is already required above
-    // Create new Spreadsheet object
-    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
+function exportToExcel($data) {
+    // Set headers for CSV download
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="activities_' . date('Y-m-d') . '.csv"');
+    
+    // Create output stream
+    $output = fopen('php://output', 'w');
+    
+    // Add UTF-8 BOM for proper Excel encoding
+    fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
     
     // Add headers
-    $col = 'A';
-    foreach ($headers as $header) {
-        $sheet->setCellValue($col . '1', $header);
-        $sheet->getStyle($col . '1')->getFont()->setBold(true);
-        $sheet->getStyle($col . '1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('F2F2F2');
-        $col++;
+    $headers = array(
+        'Roll Number', // Corresponds to s.reg_number
+        'Student Name', // Corresponds to s.name
+        'Department', // Corresponds to s.department
+        'Batch', // Corresponds to s.academic_year
+        'Activity Type', // Corresponds to a.activity_type
+        'Date From' // Corresponds to a.date_from
+    );
+    fputcsv($output, $headers);
+    
+    // Add data rows
+    foreach ($data as $row) {
+        fputcsv($output, $row);
     }
     
-    // Add data
-    $row = 2;
-    foreach ($data as $rowData) {
-        $col = 'A';
-        foreach ($rowData as $cell) {
-            $sheet->setCellValue($col . $row, $cell);
-            $col++;
-        }
-        $row++;
-    }
-    
-    // Auto-size columns
-    foreach (range('A', 'H') as $col) {
-        $sheet->getColumnDimension($col)->setAutoSize(true);
-    }
-    
-    // Set headers for download
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="student_activities.xlsx"');
-    header('Cache-Control: max-age=0');
-    
-    // Create Excel file
-    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-    $writer->save('php://output');
-    exit;
+    fclose($output);
+    exit();
 }
 
 /**
@@ -259,7 +246,7 @@ function exportToWord($headers, $data) {
     $section->addTextBreak(1);
     
     // Create table
-    $table = $section->addTable(['borderSize' => 1, 'borderColor' => '000000']);
+    $table = $phpWord->addTable(['borderSize' => 1, 'borderColor' => '000000']);
     
     // Add header row
     $table->addRow();
