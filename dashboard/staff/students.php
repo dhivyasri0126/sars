@@ -222,10 +222,135 @@ while ($row = $result->fetch_assoc()) {
                 </div>
                 <?php endif; ?>
 
-                <!-- Export Buttons -->
-                <div class="flex space-x-4 mb-4">
-                    <button type="button" onclick="openExportModal('pdf')" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"><i class="fas fa-file-pdf mr-2"></i>Export to PDF</button>
-                    <button type="button" onclick="openExportModal('excel')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"><i class="fas fa-file-excel mr-2"></i>Export to Excel</button>
+                <!-- Add Student Button -->
+                <div class="flex justify-between items-center mb-4">
+                    <button onclick="openAddStudentModal()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center">
+                        <i class="fas fa-user-plus mr-2"></i> Add Student
+                    </button>
+                    <div class="flex space-x-4">
+                        <button type="button" onclick="openExportModal('pdf')" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"><i class="fas fa-file-pdf mr-2"></i>Export to PDF</button>
+                        <button type="button" onclick="openExportModal('excel')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"><i class="fas fa-file-excel mr-2"></i>Export to Excel</button>
+                    </div>
+                </div>
+
+                <!-- Add Student Modal -->
+                <div id="addStudentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden overflow-y-auto">
+                    <div class="min-h-screen px-4 text-center">
+                        <div class="fixed inset-0" aria-hidden="true">
+                            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                        </div>
+                        <span class="inline-block h-screen align-middle" aria-hidden="true">&#8203;</span>
+                        <div class="inline-block w-full max-w-4xl p-6 my-8 text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-lg">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-lg font-bold text-gray-800 dark:text-white">Add New Student</h2>
+                                <button onclick="closeAddStudentModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
+                            </div>
+                            <form id="addStudentForm" method="POST" action="add_student.php" class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="name">Name</label>
+                                        <input type="text" id="name" name="name" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="regno">Register Number</label>
+                                        <input type="text" id="regno" name="regno" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="department">Department</label>
+                                        <select id="department" name="department" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                            <?php foreach ($departments as $code => $name): ?>
+                                            <option value="<?php echo $code; ?>"><?php echo $name; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="academic_year">Academic Year</label>
+                                        <select id="academic_year" name="academic_year" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                            <?php foreach ($batches as $batch_name => $batch_year): ?>
+                                            <option value="<?php echo $batch_year; ?>"><?php echo $batch_name; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="section">Section</label>
+                                        <input type="text" id="section" name="section" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="dob">Date of Birth</label>
+                                        <input type="date" id="dob" name="dob" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="gender">Gender</label>
+                                        <select id="gender" name="gender" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="mobile">Mobile Number</label>
+                                        <input type="text" id="mobile" name="mobile" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="hostel_day">Hosteller/Day Scholar</label>
+                                        <select id="hostel_day" name="hostel_day" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                            <option value="hosteller">Hosteller</option>
+                                            <option value="dayscholar">Day Scholar</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="email">Email</label>
+                                        <input type="email" id="email" name="email" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="password">Password</label>
+                                        <input type="password" id="password" name="password" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="confirm_password">Confirm Password</label>
+                                        <input type="password" id="confirm_password" name="confirm_password" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Address Information</h3>
+                                    <div>
+                                        <label class="block text-gray-700 dark:text-gray-300 mb-2" for="street">Street Address</label>
+                                        <input type="text" id="street" name="street" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-gray-700 dark:text-gray-300 mb-2" for="city">City</label>
+                                            <input type="text" id="city" name="city" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 dark:text-gray-300 mb-2" for="state">State</label>
+                                            <input type="text" id="state" name="state" required value="Tamil Nadu" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-gray-700 dark:text-gray-300 mb-2" for="pincode">Pincode</label>
+                                            <input type="text" id="pincode" name="pincode" required class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 dark:text-gray-300 mb-2" for="country">Country</label>
+                                            <input type="text" id="country" name="country" required value="India" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="address" id="complete_address">
+                                </div>
+                                <div class="flex justify-end space-x-3 mt-6">
+                                    <button type="button" onclick="closeAddStudentModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                                        Add Student
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Export Modal -->
@@ -465,6 +590,68 @@ while ($row = $result->fetch_assoc()) {
                 closeExportModal();
             }
         }
+
+        function openAddStudentModal() {
+            document.getElementById('addStudentModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            // Scroll to top of modal
+            document.getElementById('addStudentModal').scrollTop = 0;
+        }
+
+        function closeAddStudentModal() {
+            document.getElementById('addStudentModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('addStudentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddStudentModal();
+            }
+        });
+
+        // Prevent modal from closing when clicking inside the modal content
+        document.querySelector('#addStudentModal > div > div').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Listen for form submission in iframe
+        window.addEventListener('message', function(e) {
+            if (e.data === 'studentAdded') {
+                closeAddStudentModal();
+                window.location.reload();
+            }
+        });
+
+        // Add Student Form Validation
+        document.getElementById('addStudentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Check if passwords match
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            // Combine address fields
+            const street = document.getElementById('street').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const pincode = document.getElementById('pincode').value;
+            const country = document.getElementById('country').value;
+            
+            // Create a complete address string
+            const completeAddress = `${street}, ${city}, ${state}, ${country} - ${pincode}`;
+            
+            // Set the complete address in the hidden input
+            document.getElementById('complete_address').value = completeAddress;
+            
+            // Submit the form
+            this.submit();
+        });
     </script>
 </body>
 </html>

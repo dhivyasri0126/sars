@@ -9,10 +9,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $gender = $_POST['gender'];
     $mobile = $_POST['mobile'];
     $hostel_day = $_POST['hostel_day'];
-    $address = $_POST['Address'];
     $email = $_POST['email'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
+    // Get and validate address
+    $address = isset($_POST['complete_address']) ? trim($_POST['complete_address']) : '';
+    if (empty($address)) {
+        echo "<script>alert('Address is required!');</script>";
+        exit();
+    }
 
     // Replace these with your actual DB credentials
     $conn = new mysqli("localhost", "root", "", "student_portal");
@@ -20,6 +25,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
     }
+
+    // Check if registration number already exists
+    $check_sql = "SELECT reg_number FROM students WHERE reg_number = ?";
+    $check_stmt = $conn->prepare($check_sql);
+    $check_stmt->bind_param("s", $regno);
+    $check_stmt->execute();
+    $check_stmt->store_result();
+
+    if ($check_stmt->num_rows > 0) {
+        echo "<script>alert('Registration number already exists!');</script>";
+        exit();
+    }
+    $check_stmt->close();
 
     $sql = "INSERT INTO students (name, reg_number, department, academic_year, section, dob, gender, mobile, hostel_day, address, email, password)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -41,7 +59,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['hostel_day'] = $hostel_day;
         $_SESSION['address'] = $address;
         $_SESSION['email'] = $email;
-        // Redirect to dashboard
+        
+        // Check if we're in an iframe
+        if (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'students.php') !== false) {
+            // Send message to parent window
+            echo "<script>
+                window.parent.postMessage('studentAdded', '*');
+            </script>";
+            exit();
+        }
+        
+        // Redirect to dashboard if not in iframe
         header('Location: ../dashboard/student/index.php');
         exit();
     } else {
@@ -64,11 +92,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-image: url('../assets/images/main.jpg');
-            background-size: cover;
-            backdrop-filter: blur(4px);
-            background-position: center;
-            background-repeat: no-repeat;
+            background: transparent;
+            backdrop-filter: none;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -78,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         .signup-container {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.95);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
@@ -362,25 +387,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         document.addEventListener("DOMContentLoaded", function () {
             const form = document.getElementById("form");
             form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                
+                // Check if passwords match
                 const password = document.getElementById("password").value;
                 const confirmPassword = document.getElementById("confirm-password").value;
                 if (password !== confirmPassword) {
-                    event.preventDefault();
                     alert("Passwords do not match!");
+                    return;
                 }
+                
+                // Combine address fields
+                const street = document.getElementById('street').value;
+                const city = document.getElementById('city').value;
+                const state = document.getElementById('state').value;
+                const pincode = document.getElementById('pincode').value;
+                const country = document.getElementById('country').value;
+                
+                // Create a complete address string
+                const completeAddress = `${street}, ${city}, ${state}, ${country} - ${pincode}`;
+                document.getElementById('complete_address').value = completeAddress;
+                
+                // Submit the form
+                this.submit();
             });
-        });
-
-        // Combine address fields on form submission
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const street = document.getElementById('street').value;
-            const city = document.getElementById('city').value;
-            const state = document.getElementById('state').value;
-            const pincode = document.getElementById('pincode').value;
-            const country = document.getElementById('country').value;
-            
-            const completeAddress = `${street}, ${city}, ${state}, ${country} - ${pincode}`;
-            document.getElementById('complete_address').value = completeAddress;
         });
     </script>
 </body>

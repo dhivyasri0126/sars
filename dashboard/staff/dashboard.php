@@ -97,7 +97,7 @@ $recentActivities = $conn->query("
 ");
 
 // Get activity data for chart with dynamic time period
-$timePeriod = isset($_GET['period']) ? $_GET['period'] : 'month';
+$timePeriod = isset($_GET['period']) ? $_GET['period'] : 'day';
 $dateFormat = '%Y-%m';
 $interval = '6 MONTH';
 $groupBy = 'DATE_FORMAT(created_at, "%Y-%m")';
