@@ -349,6 +349,10 @@ echo "<!-- Debug: Number of activities found = " . count($activities) . " -->";
                                                class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
                                                 <i class="fas fa-check"></i> Approve
                                             </a>
+                                            <a href="approve_activity.php?id=<?php echo $activity['id']; ?>&action=reject" 
+                                               class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                                                <i class="fas fa-times"></i> Reject
+                                            </a>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
