@@ -61,13 +61,19 @@ $where_conditions = [];
 $params = [];
 $types = "";
 
+if (isset($_GET['reg_number']) && !empty($_GET['reg_number'])) {
+    $reg_number = "%" . $conn->real_escape_string($_GET['reg_number']) . "%";
+    $where_conditions[] = "s.reg_number LIKE ?";
+    $params[] = $reg_number;
+    $types .= "s";
+}
+
 if (isset($_GET['search']) && !empty($_GET['search'])) {
     $search = "%" . $conn->real_escape_string($_GET['search']) . "%";
-    $where_conditions[] = "(a.event_name LIKE ? OR s.name LIKE ? OR s.reg_number LIKE ?)";
+    $where_conditions[] = "(a.event_name LIKE ? OR s.name LIKE ?)";
     $params[] = $search;
     $params[] = $search;
-    $params[] = $search;
-    $types .= "sss";
+    $types .= "ss";
 }
 
 if (isset($_GET['department']) && !empty($_GET['department'])) {
@@ -250,12 +256,18 @@ echo "<!-- Debug: Number of activities found = " . count($activities) . " -->";
                 </script>
                 <!-- Search and Filter Section -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-                    <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <form method="get" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                         <div>
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="search">Search</label>
                             <input type="text" id="search" name="search" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>" 
                                    class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
                                    placeholder="Activity title or Student name">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2" for="reg_number">Register Number</label>
+                            <input type="text" id="reg_number" name="reg_number" value="<?php echo isset($_GET['reg_number']) ? htmlspecialchars($_GET['reg_number']) : ''; ?>" 
+                                   class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+                                   placeholder="Enter register number">
                         </div>
                         <div>
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="department">Department</label>
@@ -309,7 +321,8 @@ echo "<!-- Debug: Number of activities found = " . count($activities) . " -->";
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Event Location</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Upload Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Approval Status</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
@@ -324,29 +337,55 @@ echo "<!-- Debug: Number of activities found = " . count($activities) . " -->";
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($activity['college']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($activity['activity_type']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"><?php echo date('M d, Y', strtotime($activity['date_from'])); ?></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <span class="px-2 py-1 rounded-full text-xs font-semibold
-                                            <?php
-                                            if ($activity['file_path']) {
-                                                echo 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
-                                            } elseif ($activity['status'] == 'pending') {
-                                                echo 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
-                                            } else {
-                                                echo 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
-                                            }
-                                            ?>">
-                                            <?php echo $activity['upload_status']; ?>
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <?php if($activity['file_path']): ?>
-                                            <a href="../../dashboard/student/view_file.php?file=<?php echo urlencode($activity['file_path']); ?>" 
-                                               class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3"
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                <i class="fas fa-check mr-1"></i> Uploaded
+                                            </span>
+                                            <a href="../student/view_file.php?file=<?php echo urlencode($activity['file_path']); ?>" 
+                                               class="ml-2 text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                                target="_blank">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
+                                        <?php else: ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+                                                <i class="fas fa-times mr-1"></i> Not Uploaded
+                                            </span>
                                         <?php endif; ?>
-                                        <?php if($activity['upload_status'] == 'Pending'): ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <?php if($activity['status'] == 'approved'): ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                <i class="fas fa-check-circle mr-1"></i> Approved
+                                            </span>
+                                        <?php elseif($activity['status'] == 'pending'): ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                <i class="fas fa-clock mr-1"></i> Pending
+                                            </span>
+                                        <?php elseif($activity['status'] == 'rejected'): ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                <i class="fas fa-times-circle mr-1"></i> Rejected
+                                            </span>
+                                        <?php elseif($activity['status'] == 'tutor_approved'): ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                <i class="fas fa-check-circle mr-1"></i> Tutor Approved
+                                            </span>
+                                        <?php elseif($activity['status'] == 'advisor_approved'): ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                <i class="fas fa-check-circle mr-1"></i> Advisor Approved
+                                            </span>
+                                        <?php elseif($activity['status'] == 'hod_approved'): ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                <i class="fas fa-check-circle mr-1"></i> HOD Approved
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+                                                <i class="fas fa-minus-circle mr-1"></i> Not Submitted
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <?php if($activity['status'] == 'pending'): ?>
                                             <a href="approve_activity.php?id=<?php echo $activity['id']; ?>&action=approve" 
                                                class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 mr-3">
                                                 <i class="fas fa-check"></i> Approve

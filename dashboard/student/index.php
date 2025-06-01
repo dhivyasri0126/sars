@@ -18,6 +18,15 @@ $last_participation = "None";
 $total_participated = 0;
 $total_prizes = 0;
 
+// Get student ID first
+$sql = "SELECT id FROM students WHERE reg_number = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $reg_number);
+$stmt->execute();
+$stmt->bind_result($student_id);
+$stmt->fetch();
+$stmt->close();
+
 // 1. Fetch student name
 $sql = "SELECT name FROM students WHERE reg_number = ?";
 $stmt = $conn->prepare($sql);
@@ -30,9 +39,9 @@ if ($stmt->fetch()) {
 $stmt->close();
 
 // 2. Last participated event
-$sql = "SELECT event_name FROM activities WHERE reg_number = ? ORDER BY date_to DESC LIMIT 1";
+$sql = "SELECT event_name FROM activities WHERE student_id = ? ORDER BY date_to DESC LIMIT 1";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $reg_number);
+$stmt->bind_param("i", $student_id);
 $stmt->execute();
 $stmt->bind_result($event_result);
 if ($stmt->fetch()) {
@@ -41,9 +50,9 @@ if ($stmt->fetch()) {
 $stmt->close();
 
 // 3. Total events participated
-$sql = "SELECT COUNT(*) FROM activities WHERE reg_number = ?";
+$sql = "SELECT COUNT(*) FROM activities WHERE student_id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $reg_number);
+$stmt->bind_param("i", $student_id);
 $stmt->execute();
 $stmt->bind_result($total_result);
 if ($stmt->fetch()) {
@@ -52,24 +61,25 @@ if ($stmt->fetch()) {
 $stmt->close();
 
 // 4. Prizes won
-$sql = "SELECT COUNT(*) FROM activities WHERE reg_number = ? AND award IS NOT NULL AND award != ''";
+$sql = "SELECT COUNT(*) FROM activities WHERE student_id = ? AND award IS NOT NULL AND award != ''";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $reg_number);
+$stmt->bind_param("i", $student_id);
 $stmt->execute();
 $stmt->bind_result($prize_result);
 if ($stmt->fetch()) {
     $total_prizes = $prize_result ?? 0;
 }
 $stmt->close();
+
 // Monthly participation (number of activities participated in each month)
 $monthly_participation = array_fill(1, 12, 0); // Months 1-12 (Jan to Dec)
 
 $sql = "SELECT MONTH(date_to) AS month, COUNT(*) AS count
         FROM activities
-        WHERE reg_number = ?
+        WHERE student_id = ?
         GROUP BY MONTH(date_to)";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $reg_number);
+$stmt->bind_param("i", $student_id);
 $stmt->execute();
 $stmt->bind_result($month, $count);
 
@@ -211,7 +221,7 @@ $conn->close();
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Event Name</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date From</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date To</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Award</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Event Location</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
                         </tr>
                     </thead>
@@ -221,18 +231,18 @@ $conn->close();
                         if ($conn->connect_error) {
                             die("Connection failed: " . $conn->connect_error);
                         }
-                        $sql = "SELECT activity_type, event_name, date_from, date_to, award, status, file_path FROM activities WHERE reg_number = ? ORDER BY date_to DESC";
+                        $sql = "SELECT activity_type, event_name, date_from, date_to, college, status, file_path FROM activities WHERE student_id = ? ORDER BY date_to DESC";
                         $stmt = $conn->prepare($sql);
-                        $stmt->bind_param("s", $reg_number);
+                        $stmt->bind_param("i", $student_id);
                         $stmt->execute();
-                        $stmt->bind_result($activity_type, $event_name, $date_from, $date_to, $award, $status, $file_path);
+                        $stmt->bind_result($activity_type, $event_name, $date_from, $date_to, $college, $status, $file_path);
                         while ($stmt->fetch()): ?>
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($activity_type); ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($event_name); ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($date_from); ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($date_to); ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($award); ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($activity_type ?? ''); ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($event_name ?? ''); ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($date_from ?? ''); ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($date_to ?? ''); ?></td>
+                            <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($college ?? ''); ?></td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold
                                     <?php

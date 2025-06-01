@@ -92,16 +92,17 @@ $result = $stmt->get_result();
             </button>
         </header>
         <main class="p-6">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 max-w-4xl mx-auto">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 w-full">
                 <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Activity Calendar</h2>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Start Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">End Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Event Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Upload Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Approval Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Activity Type</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Certificate</th>
                         </tr>
@@ -114,16 +115,42 @@ $result = $stmt->get_result();
                                 echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . date('M d, Y', strtotime($row['date_from'])) . "</td>";
                                 echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . date('M d, Y', strtotime($row['date_to'])) . "</td>";
                                 echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . htmlspecialchars($row['event_name']) . "</td>";
-                                echo "<td class='px-6 py-4 whitespace-nowrap text-sm'>";
-                                echo "<span class='px-2 py-1 rounded-full text-xs font-semibold ";
+                                // Upload Status
+                                echo "<td class='px-6 py-4 whitespace-nowrap'>";
                                 if ($row['file_path']) {
-                                    echo "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'>Uploaded";
-                                } elseif ($row['status'] == 'pending') {
-                                    echo "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'>Pending";
+                                    echo "<span class='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'>
+                                            <i class='fas fa-check mr-1'></i> Uploaded
+                                          </span>";
                                 } else {
-                                    echo "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'>Not Uploaded";
+                                    echo "<span class='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'>
+                                            <i class='fas fa-times mr-1'></i> Not Uploaded
+                                          </span>";
                                 }
-                                echo "</span></td>";
+                                echo "</td>";
+                                // Approval Status
+                                echo "<td class='px-6 py-4 whitespace-nowrap'>";
+                                if ($row['status'] == 'approved') {
+                                    echo "<span class='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'>
+                                            <i class='fas fa-check-circle mr-1'></i> Approved
+                                          </span>";
+                                } elseif ($row['status'] == 'pending') {
+                                    echo "<span class='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'>
+                                            <i class='fas fa-clock mr-1'></i> Pending
+                                          </span>";
+                                } elseif ($row['status'] == 'rejected') {
+                                    echo "<span class='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'>
+                                            <i class='fas fa-times-circle mr-1'></i> Rejected
+                                          </span>";
+                                } elseif ($row['status'] == 'tutor_approved') {
+                                    echo "<span class='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'>
+                                            <i class='fas fa-check-circle mr-1'></i> Tutor Approved
+                                          </span>";
+                                } else {
+                                    echo "<span class='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'>
+                                            <i class='fas fa-minus-circle mr-1'></i> Not Submitted
+                                          </span>";
+                                }
+                                echo "</td>";
                                 echo "<td class='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300'>" . htmlspecialchars($row['activity_type']) . "</td>";
                                 echo "<td class='px-6 py-4 whitespace-nowrap text-sm'>";
                                 if (!empty($row['file_path'])) {

@@ -94,6 +94,13 @@ $where_conditions = [];
 $params = [];
 $types = "";
 
+if (isset($_GET['reg_number']) && !empty($_GET['reg_number'])) {
+    $reg_number = "%" . $conn_students->real_escape_string($_GET['reg_number']) . "%";
+    $where_conditions[] = "reg_number LIKE ?";
+    $params[] = $reg_number;
+    $types .= "s";
+}
+
 if (isset($_GET['search']) && !empty($_GET['search'])) {
     $search = "%" . $conn_students->real_escape_string($_GET['search']) . "%";
     $where_conditions[] = "name LIKE ?";
@@ -114,7 +121,13 @@ if (isset($_GET['batch']) && !empty($_GET['batch'])) {
     $types .= "i";
 }
 
-$sql = "SELECT s.*, (SELECT COUNT(*) FROM activities a WHERE a.id = s.id) as activities FROM students s";
+if (isset($_GET['section']) && !empty($_GET['section'])) {
+    $where_conditions[] = "section = ?";
+    $params[] = $conn_students->real_escape_string($_GET['section']);
+    $types .= "s";
+}
+
+$sql = "SELECT s.*, (SELECT COUNT(*) FROM activities a WHERE a.student_id = s.id) as activities FROM students s";
 if (!empty($where_conditions)) {
     $sql .= " WHERE " . implode(" AND ", $where_conditions);
 }
@@ -338,7 +351,7 @@ while ($row = $result->fetch_assoc()) {
                                             <input type="text" id="country" name="country" required value="India" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                                         </div>
                                     </div>
-                                    <input type="hidden" name="address" id="complete_address">
+                                    <input type="hidden" name="complete_address" id="complete_address">
                                 </div>
                                 <div class="flex justify-end space-x-3 mt-6">
                                     <button type="button" onclick="closeAddStudentModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
@@ -364,6 +377,7 @@ while ($row = $result->fetch_assoc()) {
                                 <label class="text-gray-700 dark:text-gray-300"><input type="checkbox" name="columns[]" value="name" checked> Name</label>
                                 <label class="text-gray-700 dark:text-gray-300"><input type="checkbox" name="columns[]" value="department" checked> Department</label>
                                 <label class="text-gray-700 dark:text-gray-300"><input type="checkbox" name="columns[]" value="academic_year" checked> Academic Year</label>
+                                <label class="text-gray-700 dark:text-gray-300"><input type="checkbox" name="columns[]" value="section" checked> Section</label>
                                 <label class="text-gray-700 dark:text-gray-300"><input type="checkbox" name="columns[]" value="activities" checked> Activities</label>
                             </div>
                             <div class="flex justify-end space-x-2">
@@ -376,12 +390,18 @@ while ($row = $result->fetch_assoc()) {
 
                 <!-- Search and Filter Section -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-                    <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <form method="get" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2" for="search">Search Student Name</label>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2" for="search">Search</label>
                             <input type="text" id="search" name="search" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>" 
                                    class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
-                                   placeholder="Enter student name">
+                                   placeholder="Student name">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2" for="reg_number">Register Number</label>
+                            <input type="text" id="reg_number" name="reg_number" value="<?php echo isset($_GET['reg_number']) ? htmlspecialchars($_GET['reg_number']) : ''; ?>" 
+                                   class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+                                   placeholder="Enter register number">
                         </div>
                         <div>
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="department">Department</label>
@@ -405,8 +425,17 @@ while ($row = $result->fetch_assoc()) {
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="flex items-end space-x-2">
-                            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex-1">
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2" for="section">Section</label>
+                            <select id="section" name="section" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="">All Sections</option>
+                                <option value="A" <?php echo (isset($_GET['section']) && $_GET['section'] === 'A') ? 'selected' : ''; ?>>A</option>
+                                <option value="B" <?php echo (isset($_GET['section']) && $_GET['section'] === 'B') ? 'selected' : ''; ?>>B</option>
+                                <option value="C" <?php echo (isset($_GET['section']) && $_GET['section'] === 'C') ? 'selected' : ''; ?>>C</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 w-full">
                                 Apply Filters
                             </button>
                         </div>
@@ -425,6 +454,7 @@ while ($row = $result->fetch_assoc()) {
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Department</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Batch</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Section</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Activities</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                                     </tr>
@@ -436,6 +466,7 @@ while ($row = $result->fetch_assoc()) {
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?php echo htmlspecialchars($student['name']); ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?php echo htmlspecialchars($student['department']); ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?php echo htmlspecialchars($student['academic_year']); ?></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?php echo htmlspecialchars($student['section']); ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?php echo htmlspecialchars($student['activities']); ?></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <button onclick="openEditModal(<?php echo htmlspecialchars(json_encode($student)); ?>)" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">
@@ -636,12 +667,24 @@ while ($row = $result->fetch_assoc()) {
                 return;
             }
             
+            // Validate mobile number
+            const mobile = document.getElementById('mobile').value;
+            if (!/^\d{10}$/.test(mobile)) {
+                alert('Please enter a valid 10-digit mobile number!');
+                return;
+            }
+            
             // Combine address fields
-            const street = document.getElementById('street').value;
-            const city = document.getElementById('city').value;
-            const state = document.getElementById('state').value;
-            const pincode = document.getElementById('pincode').value;
-            const country = document.getElementById('country').value;
+            const street = document.getElementById('street').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value.trim();
+            const pincode = document.getElementById('pincode').value.trim();
+            const country = document.getElementById('country').value.trim();
+            
+            if (!street || !city || !state || !pincode || !country) {
+                alert('Please fill in all address fields!');
+                return;
+            }
             
             // Create a complete address string
             const completeAddress = `${street}, ${city}, ${state}, ${country} - ${pincode}`;

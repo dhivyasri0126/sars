@@ -396,17 +396,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     alert("Passwords do not match!");
                     return;
                 }
-                
+
                 // Combine address fields
-                const street = document.getElementById('street').value;
-                const city = document.getElementById('city').value;
-                const state = document.getElementById('state').value;
-                const pincode = document.getElementById('pincode').value;
-                const country = document.getElementById('country').value;
-                
+            const street = document.getElementById('street').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const pincode = document.getElementById('pincode').value;
+            const country = document.getElementById('country').value;
+            
                 // Create a complete address string
-                const completeAddress = `${street}, ${city}, ${state}, ${country} - ${pincode}`;
-                document.getElementById('complete_address').value = completeAddress;
+            const completeAddress = `${street}, ${city}, ${state}, ${country} - ${pincode}`;
+            document.getElementById('complete_address').value = completeAddress;
                 
                 // Submit the form
                 this.submit();

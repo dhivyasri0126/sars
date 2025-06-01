@@ -32,11 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $event_name = $_POST['event_name'];
     $date_from = $_POST['date_from'];
     $date_to = $_POST['date_to'];
+    $college = $_POST['college'];
     $student_id = $student['id']; // Use the student's ID from the database
 
-    $sql = "INSERT INTO activities (student_id, activity_type, event_name, date_from, date_to) VALUES (?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO activities (student_id, activity_type, event_name, date_from, date_to, college) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("issss", $student_id, $activity_type, $event_name, $date_from, $date_to);
+    $stmt->bind_param("isssss", $student_id, $activity_type, $event_name, $date_from, $date_to, $college);
     
     if ($stmt->execute()) {
         $success_message = "Activity added successfully!";
@@ -150,6 +151,12 @@ $conn->close();
                                        class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white py-2 px-4 text-base">
                             </div>
                             <div>
+                                <label for="college" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Event Location</label>
+                                <input type="text" name="college" id="college" required
+                                       class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white py-2 px-4 text-base"
+                                       placeholder="Enter event location">
+                            </div>
+                            <div>
                                 <label for="date_from" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
                                 <input type="date" name="date_from" id="date_from" required
                                        class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white py-2 px-4 text-base">
@@ -177,21 +184,23 @@ $conn->close();
                                 <?php foreach ($activities as $activity): ?>
                                     <div class="border dark:border-gray-700 rounded-lg p-3">
                                         <div class="flex justify-between items-start">
-                                            <div class="space-y-1">
-                                                <h3 class="font-semibold text-gray-800 dark:text-white"><?php echo htmlspecialchars($activity['activity_type']); ?></h3>
-                                                <p class="text-gray-600 dark:text-gray-400"><?php echo htmlspecialchars($activity['event_name']); ?></p>
-                                                <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                    <?php echo date('M d, Y', strtotime($activity['date_from'])); ?> - 
-                                                    <?php echo date('M d, Y', strtotime($activity['date_to'])); ?>
-                                                </p>
+                                        <div class="space-y-1">
+                                            <h3 class="font-semibold text-gray-800 dark:text-white"><?php echo htmlspecialchars($activity['activity_type']); ?></h3>
+                                            <p class="text-gray-600 dark:text-gray-400"><?php echo htmlspecialchars($activity['event_name']); ?></p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                <?php echo date('M d, Y', strtotime($activity['date_from'])); ?> - 
+                                                <?php echo date('M d, Y', strtotime($activity['date_to'])); ?>
+                                            </p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                Event Location: <?php echo htmlspecialchars($activity['college'] ?? ''); ?>
+                                            </p>
                                             </div>
-                                            <div class="ml-4">
+                                            <div class="ml-4 flex flex-col gap-2">
+                                                <!-- Upload Status -->
                                                 <span class="px-3 py-1.5 rounded-full text-sm font-semibold
                                                     <?php
                                                     if ($activity['file_path']) {
                                                         echo 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
-                                                    } elseif ($activity['status'] == 'pending') {
-                                                        echo 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
                                                     } else {
                                                         echo 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
                                                     }
@@ -199,10 +208,33 @@ $conn->close();
                                                     <?php
                                                     if ($activity['file_path']) {
                                                         echo 'Uploaded';
-                                                    } elseif ($activity['status'] == 'pending') {
-                                                        echo 'Pending';
                                                     } else {
                                                         echo 'Not Uploaded';
+                                                    }
+                                                    ?>
+                                                </span>
+                                                <!-- Approval Status -->
+                                                <span class="px-3 py-1.5 rounded-full text-sm font-semibold
+                                                    <?php
+                                                    if ($activity['status'] == 'approved') {
+                                                        echo 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
+                                                    } elseif ($activity['status'] == 'pending') {
+                                                        echo 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
+                                                    } elseif ($activity['status'] == 'rejected') {
+                                                        echo 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100';
+                                                    } else {
+                                                        echo 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100';
+                                                    }
+                                                    ?>">
+                                                    <?php
+                                                    if ($activity['status'] == 'approved') {
+                                                        echo 'Approved';
+                                                    } elseif ($activity['status'] == 'pending') {
+                                                        echo 'Pending';
+                                                    } elseif ($activity['status'] == 'rejected') {
+                                                        echo 'Rejected';
+                                                    } else {
+                                                        echo 'Not Submitted';
                                                     }
                                                     ?>
                                                 </span>
