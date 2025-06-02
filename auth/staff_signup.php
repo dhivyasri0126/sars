@@ -1,6 +1,6 @@
-<?php
+0<?php
 session_start();
-require_once '../php/config.php';
+require_once __DIR__ . '/../php/config.php';
 
 $error_message = "";
 $success_message = "";

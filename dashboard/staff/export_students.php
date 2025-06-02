@@ -91,7 +91,8 @@ $column_names = [
     'name' => 'Name',
     'department' => 'Department',
     'academic_year' => 'Academic Year',
-    'activities' => 'Activities'
+    'activities' => 'Activities',
+    'section' => 'Section'  // Add section to column names
 ];
 
 // Get the export format
@@ -100,9 +101,11 @@ $format = isset($_POST['export_type']) ? strtolower($_POST['export_type']) : 'ex
 // Export based on type
 switch ($format) {
     case 'pdf':
+        ob_clean(); // Clear any output buffers
         exportToPDF($selected_columns, $column_names, $students);
         break;
     case 'excel':
+        ob_clean(); // Clear any output buffers
         exportToExcel($selected_columns, $column_names, $students);
         break;
     default:
@@ -148,7 +151,9 @@ function exportToPDF($selected_columns, $column_names, $students) {
     
     // Add headers
     foreach ($selected_columns as $column) {
-        $html .= '<th style="background-color: #f2f2f2; font-weight: bold;">' . $column_names[$column] . '</th>';
+        if (isset($column_names[$column])) {
+            $html .= '<th style="background-color: #f2f2f2; font-weight: bold;">' . $column_names[$column] . '</th>';
+        }
     }
     
     $html .= '</tr></thead><tbody>';
@@ -157,7 +162,9 @@ function exportToPDF($selected_columns, $column_names, $students) {
     foreach ($students as $student) {
         $html .= '<tr>';
         foreach ($selected_columns as $column) {
-            $html .= '<td>' . htmlspecialchars($student[$column]) . '</td>';
+            if (isset($column_names[$column])) {
+                $html .= '<td>' . htmlspecialchars($student[$column] ?? '') . '</td>';
+            }
         }
         $html .= '</tr>';
     }
@@ -187,26 +194,23 @@ function exportToExcel($selected_columns, $column_names, $students) {
     fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
     
     // Add headers
-    $headers = array(
-        'Student ID',
-        'Name',
-        'Email',
-        'Course',
-        'Year Level',
-        'Status'
-    );
+    $headers = [];
+    foreach ($selected_columns as $column) {
+        if (isset($column_names[$column])) {
+            $headers[] = $column_names[$column];
+        }
+    }
     fputcsv($output, $headers);
     
     // Add data rows
     foreach ($students as $student) {
-        fputcsv($output, array(
-            $student['reg_number'],
-            $student['name'],
-            $student['email'],
-            $student['department'],
-            $student['academic_year'],
-            $student['activities']
-        ));
+        $row = [];
+        foreach ($selected_columns as $column) {
+            if (isset($column_names[$column])) {
+                $row[] = $student[$column] ?? '';
+            }
+        }
+        fputcsv($output, $row);
     }
     
     fclose($output);

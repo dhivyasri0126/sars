@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
     // Get and validate address
-    $address = isset($_POST['complete_address']) ? trim($_POST['complete_address']) : '';
+    $address = isset($_POST['address']) ? trim($_POST['address']) : '';
     if (empty($address)) {
         echo "<script>alert('Address is required!');</script>";
         exit();
@@ -92,8 +92,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: transparent;
-            backdrop-filter: none;
+            background-image: url('../assets/images/main.jpg');
+            background-size: cover;
+            backdrop-filter: blur(4px);
+            background-position: center;
+            background-repeat: no-repeat;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -398,15 +401,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
 
                 // Combine address fields
-            const street = document.getElementById('street').value;
-            const city = document.getElementById('city').value;
-            const state = document.getElementById('state').value;
-            const pincode = document.getElementById('pincode').value;
-            const country = document.getElementById('country').value;
-            
+                const street = document.getElementById('street').value;
+                const city = document.getElementById('city').value;
+                const state = document.getElementById('state').value;
+                const pincode = document.getElementById('pincode').value;
+                const country = document.getElementById('country').value;
+                
                 // Create a complete address string
-            const completeAddress = `${street}, ${city}, ${state}, ${country} - ${pincode}`;
-            document.getElementById('complete_address').value = completeAddress;
+                const completeAddress = `${street}, ${city}, ${state}, ${country} - ${pincode}`;
+                document.getElementById('complete_address').value = completeAddress;
                 
                 // Submit the form
                 this.submit();
