@@ -3,7 +3,7 @@ session_start();
 
 // Check if staff is logged in
 if (!isset($_SESSION['staff_id'])) {
-    header("Location: ../../auth/staff_login.php");
+    header("Location: ../auth/admin_login.php");
     exit();
 }
 
@@ -11,24 +11,18 @@ if (!isset($_SESSION['staff_id'])) {
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db_students = "student_portal";
-$db_staff = "staff_signup";
+$db = "sats_db";
 
 // Two connections: one for staff, one for students/activities
-$conn_staff = new mysqli($host, $user, $pass, $db_staff);
-$conn_students = new mysqli($host, $user, $pass, $db_students);
+$conn = new mysqli($host, $user, $pass, $db);
 
-if ($conn_staff->connect_error) {
-    die("Staff DB Connection failed: " . $conn_staff->connect_error);
+if ($conn->connect_error) {
+    die("DB Connection failed: " . $conn->connect_error);
 }
-if ($conn_students->connect_error) {
-    die("Student DB Connection failed: " . $conn_students->connect_error);
-}
-
 // Get staff details
 $staff_id = $_SESSION['staff_id'];
-$sql = "SELECT * FROM staff WHERE id = $staff_id";
-$result = $conn_staff->query($sql);
+$sql = "SELECT * FROM staffs WHERE staff_id = $staff_id";
+$result = $conn->query($sql);
 $staff = $result->fetch_assoc();
 
 // Handle student update
@@ -135,13 +129,13 @@ if (isset($_GET['section']) && !empty($_GET['section'])) {
     $types .= "s";
 }
 
-$sql = "SELECT s.*, (SELECT COUNT(*) FROM activities a WHERE a.student_id = s.id) as activities FROM students s";
+$sql = "SELECT s.*, (SELECT COUNT(*) FROM activities a WHERE a.student_id = s.student_id) as activities FROM students s";
 if (!empty($where_conditions)) {
     $sql .= " WHERE " . implode(" AND ", $where_conditions);
 }
-$sql .= " ORDER BY s.name";
+$sql .= " ORDER BY s.student_name";
 
-$stmt = $conn_students->prepare($sql);
+$stmt = $conn->prepare($sql);
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
 }
@@ -181,38 +175,7 @@ while ($row = $result->fetch_assoc()) {
 <body class="bg-gray-100 dark:bg-gray-900">
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="sidebar w-64 bg-white dark:bg-gray-800 shadow-lg">
-            <div class="p-4">
-                <img src="../../assets/images/logo.png" alt="Logo" class="w-16 h-16 mx-auto">
-                <h2 class="text-center text-xl font-bold mt-2 text-gray-800 dark:text-white">Staff Portal</h2>
-            </div>
-            <nav class="mt-6">
-                <a href="dashboard.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
-                    <i class="fas fa-home w-6"></i>
-                    <span class="ml-3">Dashboard</span>
-                </a>
-                <a href="students.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
-                    <i class="fas fa-users w-6"></i>
-                    <span class="ml-3">Students</span>
-                </a>
-                <a href="activities.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
-                    <i class="fas fa-tasks w-6"></i>
-                    <span class="ml-3">Activities</span>
-                </a>
-                <a href="approvals.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
-                    <i class="fas fa-check-circle w-6"></i>
-                    <span class="ml-3">Approvals</span>
-                </a>
-                <a href="profile.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
-                    <i class="fas fa-user w-6"></i>
-                    <span class="ml-3">Profile</span>
-                </a>
-                <a href="../../auth/logout.php" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-gray-700">
-                    <i class="fas fa-sign-out-alt w-6"></i>
-                    <span class="ml-3">Logout</span>
-                </a>
-            </nav>
-        </div>
+        <?php include 'includes/admin_sidebar.php'; ?>
 
         <!-- Main Content -->
         <div class="flex-1 overflow-auto">
@@ -227,8 +190,8 @@ while ($row = $result->fetch_assoc()) {
                         </button>
                         <div class="relative">
                             <button class="flex items-center space-x-2">
-                                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($staff['name']); ?>" alt="Profile" class="w-8 h-8 rounded-full">
-                                <span class="text-gray-700 dark:text-gray-300"><?php echo htmlspecialchars($staff['name']); ?></span>
+                                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($staff['staff_name']); ?>" alt="Profile" class="w-8 h-8 rounded-full">
+                                <span class="text-gray-700 dark:text-gray-300"><?php echo htmlspecialchars($staff['staff_name']); ?></span>
                             </button>
                         </div>
                     </div>
@@ -706,4 +669,4 @@ while ($row = $result->fetch_assoc()) {
     </script>
 </body>
 </html>
-<?php $conn_staff->close(); $conn_students->close(); ?>
+<?php $conn->close(); ?>

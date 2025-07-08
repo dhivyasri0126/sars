@@ -18,7 +18,7 @@ if ($conn->connect_error) {
 $reg_number = $_SESSION['reg_number'];
 
 // Fetch student details
-$sql = "SELECT id, name FROM students WHERE reg_number = ?";
+$sql = "SELECT id, name, reg_number FROM students WHERE reg_number = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $reg_number);
 $stmt->execute();
@@ -33,11 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $date_from = $_POST['date_from'];
     $date_to = $_POST['date_to'];
     $college = $_POST['college'];
-    $student_id = $student['id']; // Use the student's ID from the database
-
-    $sql = "INSERT INTO activities (student_id, activity_type, event_name, date_from, date_to, college) VALUES (?, ?, ?, ?, ?, ?)";
+    $event_type = $_POST['event_type'];
+    $award = $_POST['award'];
+    $reg_number = $student['reg_number'];
+    $student_id = $student['id'];
+    $sql = "INSERT INTO activities (student_id, reg_number, activity_type, date_from, date_to, college, event_type, event_name, award) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("isssss", $student_id, $activity_type, $event_name, $date_from, $date_to, $college);
+    $stmt->bind_param("issssssss", $student_id, $reg_number, $activity_type, $date_from, $date_to, $college, $event_type, $event_name, $award);
     
     if ($stmt->execute()) {
         $success_message = "Activity added successfully!";

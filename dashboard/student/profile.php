@@ -13,6 +13,7 @@ $reg_number = $_SESSION['reg_number'];
 // Handle profile update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $name = $conn->real_escape_string($_POST['name']);
+    $reg_number = $conn->real_escape_string($_POST['reg_number']);
     $department = $conn->real_escape_string($_POST['department']);
     $academic_year = $conn->real_escape_string($_POST['academic_year']);
     $section = $conn->real_escape_string($_POST['section']);
@@ -22,9 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $hostel_day = $conn->real_escape_string($_POST['hostel_day']);
     $address = $conn->real_escape_string($_POST['address']);
     $email = $conn->real_escape_string($_POST['email']);
-    $sql = "UPDATE students SET name=?, department=?, academic_year=?, section=?, dob=?, gender=?, mobile=?, hostel_day=?, address=?, email=? WHERE reg_number=?";
+    // Password and activity_count are not editable from profile for security and logic reasons
+    $sql = "UPDATE students SET name=?, reg_number=?, department=?, academic_year=?, section=?, dob=?, gender=?, mobile=?, hostel_day=?, address=?, email=? WHERE reg_number=?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sssssssssss", $name, $department, $academic_year, $section, $dob, $gender, $mobile, $hostel_day, $address, $email, $reg_number);
+    $stmt->bind_param("sssssssssssss", $name, $reg_number, $department, $academic_year, $section, $dob, $gender, $mobile, $hostel_day, $address, $email, $reg_number);
     if ($stmt->execute()) {
         // Update session variables
         $_SESSION['name'] = $name;
@@ -140,53 +142,53 @@ $conn->close();
                     <form method="post">
                         <div class="mb-4">
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="name">Name</label>
-                            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($student['name']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($student['name']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="reg_number">Register Number</label>
-                            <input type="text" id="reg_number" name="reg_number" value="<?php echo htmlspecialchars($student['reg_number']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" readonly>
+                            <input type="text" id="reg_number" name="reg_number" value="<?php echo htmlspecialchars($student['reg_number']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" readonly required>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="department">Department</label>
-                            <input type="text" id="department" name="department" value="<?php echo htmlspecialchars($student['department']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <input type="text" id="department" name="department" value="<?php echo htmlspecialchars($student['department']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="academic_year">Academic Year</label>
-                            <input type="text" id="academic_year" name="academic_year" value="<?php echo htmlspecialchars($student['academic_year']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <input type="text" id="academic_year" name="academic_year" value="<?php echo htmlspecialchars($student['academic_year']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="section">Section</label>
-                            <input type="text" id="section" name="section" value="<?php echo htmlspecialchars($student['section']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <input type="text" id="section" name="section" value="<?php echo htmlspecialchars($student['section']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="dob">Date of Birth</label>
-                            <input type="date" id="dob" name="dob" value="<?php echo htmlspecialchars($student['dob']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <input type="date" id="dob" name="dob" value="<?php echo htmlspecialchars($student['dob']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="gender">Gender</label>
-                            <select id="gender" name="gender" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <select id="gender" name="gender" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                                 <option value="male" <?php if($student['gender']==='male') echo 'selected'; ?>>Male</option>
                                 <option value="female" <?php if($student['gender']==='female') echo 'selected'; ?>>Female</option>
                             </select>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="mobile">Mobile</label>
-                            <input type="text" id="mobile" name="mobile" value="<?php echo htmlspecialchars($student['mobile']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <input type="text" id="mobile" name="mobile" value="<?php echo htmlspecialchars($student['mobile']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="hostel_day">Hosteller/DayScholar</label>
-                            <select id="hostel_day" name="hostel_day" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <select id="hostel_day" name="hostel_day" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                                 <option value="hosteller" <?php if($student['hostel_day']==='hosteller') echo 'selected'; ?>>Hosteller</option>
                                 <option value="dayscholar" <?php if($student['hostel_day']==='dayscholar') echo 'selected'; ?>>DayScholar</option>
                             </select>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="address">Address</label>
-                            <input type="text" id="address" name="address" value="<?php echo htmlspecialchars($student['address']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <input type="text" id="address" name="address" value="<?php echo htmlspecialchars($student['address']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700 dark:text-gray-300 mb-2" for="email">Email</label>
-                            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($student['email']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($student['email']); ?>" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                         </div>
                         <div class="mt-6 text-right">
                             <button type="submit" name="update_profile" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Save Changes</button>

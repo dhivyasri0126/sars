@@ -226,4 +226,21 @@ Common issues and their solutions:
 - Commit conventions
 - Release management
 
+## [2025-05-15] Database Schema Update
+
+### Key Changes
+- **students table** (student_portal):
+  - Added/updated fields: `academic_year`, `section`, `dob`, `gender`, `mobile`, `hostel_day`, `address`, `email`, `password`, `activity_count`.
+  - `reg_number` is now `varchar(50)`.
+- **activities table** (student_portal):
+  - Added/updated fields: `reg_number`, `activity_type`, `date_from`, `date_to`, `college`, `event_type`, `event_name`, `award`, `status`, `file_path`.
+  - Foreign key: `student_id` references `students.id`.
+- **staff table** (staff_signup):
+  - Added/updated fields: `designation`, `role` (default 'none'), `phone`, `gender`, `date_of_birth`, `created_at`, `updated_at`.
+
+### Codebase Updates
+- All PHP files and forms now use the new/renamed fields and types.
+- Validation and logic updated to match DB constraints (required fields, varchar limits, enums).
+- All foreign key relationships respected in logic and queries.
+
 This documentation is a living document and should be updated as the project evolves.

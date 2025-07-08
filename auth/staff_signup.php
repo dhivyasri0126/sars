@@ -1,72 +1,54 @@
-0<?php
+<?php
 session_start();
-require_once __DIR__ . '/../php/config.php';
+require_once 'db.php';
 
-$error_message = "";
-$success_message = "";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = $conn->real_escape_string($_POST['name']);
+    $email = $conn->real_escape_string($_POST['email']);
+    $designation = $conn->real_escape_string($_POST['designation']);
+    $role = $conn->real_escape_string($_POST['role']);
+    $qualification = $conn->real_escape_string($_POST['qualification']);
+    $department_id = (int)$_POST['department'];
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-// Process signup form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get form data
-    $name = sanitize_input($_POST['name']);
-    $dob = sanitize_input($_POST['dob']);
-    $designation = sanitize_input($_POST['designation']);
-    $department = sanitize_input($_POST['department']);
-    $gender = sanitize_input($_POST['gender']);
-    $phone = sanitize_input($_POST['phone']);
-    $email = sanitize_input($_POST['email']);
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
-    $role = sanitize_input($_POST['role']);
-    
-    // Validate form data
-    if (empty($name) || empty($dob) || empty($designation) || empty($department) || 
-        empty($gender) || empty($phone) || empty($email) || empty($password) || empty($confirm_password)) {
-        $error_message = "All fields are required.";
-    } elseif ($password !== $confirm_password) {
-        $error_message = "Passwords do not match.";
-    } elseif (strlen($password) < 6) {
-        $error_message = "Password must be at least 6 characters long.";
+    // Check if email already exists
+    $check_sql = "SELECT * FROM staffs WHERE email = '$email'";
+    $result = $conn->query($check_sql);
+    if ($result->num_rows > 0) {
+        $error = "Email already exists!";
     } else {
-        // Check if email already exists
-        $check_sql = "SELECT id FROM staff WHERE email = ?";
-        if ($check_stmt = $conn->prepare($check_sql)) {
-            $check_stmt->bind_param("s", $email);
-            $check_stmt->execute();
-            $check_result = $check_stmt->get_result();
+        // Insert into staffs table
+        $sql = "INSERT INTO staffs (staff_name, email, designation, role, qualification, department_id) 
+                VALUES ('$name', '$email', '$designation', '$role', '$qualification', $department_id)";
+        
+        if ($conn->query($sql)) {
+            $staff_id = $conn->insert_id;
             
-            if ($check_result->num_rows > 0) {
-                $error_message = "Email already exists. Please use a different email.";
+            // Insert into logins table
+            $login_sql = "INSERT INTO logins (user_id, user_type, password_hash) 
+                         VALUES ($staff_id, 'staff', '$password')";
+            
+            if ($conn->query($login_sql)) {
+                $_SESSION['success'] = "Registration successful! Please login.";
+                header("Location: staff_login.php");
+                exit();
             } else {
-                // Hash the password
-                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                
-                // Insert new staff member
-                $insert_sql = "INSERT INTO staff (name, email, password, department, designation, phone, gender, date_of_birth, role) 
-                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                
-                if ($insert_stmt = $conn->prepare($insert_sql)) {
-                    $insert_stmt->bind_param("sssssssss", $name, $email, $hashed_password, $department, $designation, $phone, $gender, $dob, $role);
-                    
-                    if ($insert_stmt->execute()) {
-                        // Set success message in session
-                        $_SESSION['signup_success'] = "Registration successful! You can now login.";
-                        // Redirect to login page
-                        header("Location: staff_login.php");
-                        exit();
-                    } else {
-                        $error_message = "Something went wrong. Please try again later.";
-                    }
-                    
-                    $insert_stmt->close();
-                }
+                $error = "Error creating login credentials: " . $conn->error;
             }
-            
-            $check_stmt->close();
+        } else {
+            $error = "Error registering staff: " . $conn->error;
         }
     }
 }
+
+// Get departments for dropdown
+$departments = [];
+$dept_result = $conn->query("SELECT department_id, department_name FROM departments ORDER BY department_name");
+while ($row = $dept_result->fetch_assoc()) {
+    $departments[] = $row;
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -217,15 +199,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <div class="col">
                     <div class="form-group">
+                        <label for="qualification">Qualification:</label>
+                        <input type="text" id="qualification" name="qualification" required>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
                         <label for="department">Department:</label>
                         <select id="department" name="department" required>
                             <option value="">Select Department</option>
-                            <option value="Computer Science">Computer Science</option>
-                            <option value="Information Technology">Information Technology</option>
-                            <option value="Electronics">Electronics</option>
-                            <option value="Mechanical">Mechanical</option>
-                            <option value="Civil">Civil</option>
-                            <option value="Administration">Administration</option>
+                            <?php foreach ($departments as $dept): ?>
+                                <option value="<?php echo $dept['department_id']; ?>">
+                                    <?php echo htmlspecialchars($dept['department_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
@@ -293,15 +280,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             Already have an account? <a href="staff_login.php" style="color: #0056b3;"><u>Login Here</u></a>
         </p>
     </div>
-    
+
     <script>
-        document.getElementById('signupForm').addEventListener('submit', function(event) {
+        // Password confirmation validation
+        document.querySelector('form').addEventListener('submit', function(e) {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm_password').value;
             
             if (password !== confirmPassword) {
+                e.preventDefault();
                 alert('Passwords do not match!');
-                event.preventDefault();
             }
         });
     </script>

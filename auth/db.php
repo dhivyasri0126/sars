@@ -2,9 +2,9 @@
 $host = "localhost";
 $user = "root";
 $pass = "";
-$dbname = "student_portal";
+$db = "sats_db";
 
-$conn = new mysqli($host, $user, $pass, $dbname);
+$conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }

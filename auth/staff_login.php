@@ -63,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="../assets/images/logo.png">
-    <title>Admin/Staff Login</title>
+    <title>Staff Login</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -156,7 +156,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="login-container">
         <img src="../assets/images/logo.png" alt="logo" class="login-logo">
-        <h2>Admin / Staff Login</h2>
+        <h2>Staff Login</h2>
         
         <?php if (!empty($error_message)): ?>
         <div class="error-message">
